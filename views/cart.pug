@@ -1,0 +1,17 @@
+html
+    head
+        title Cart
+        link(rel='stylesheet' href='./styles.css')
+    body
+        include ./partials/header.pug
+        br
+        |Cart
+        br
+        br
+        if cart
+            |Users that match search:
+        else
+            |Nothing in cart
+        #cart
+            include ./partials/cart_partial.pug
+        script(src="/js/query.js")

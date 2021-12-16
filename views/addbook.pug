@@ -1,0 +1,36 @@
+html
+    head
+        title Add Book
+        link(rel='stylesheet' href='./styles.css')
+    body
+        include ./partials/header.pug
+        br
+        |Add Book To Store
+        br
+        br
+        label(for="title") Title: 
+        input(type="textbox" id="title" size="50")
+        br
+        br
+        label(for="author") Author: 
+        input(type="textbox" id="author" size="50")
+        br
+        br
+        label(for="isbn") ISBN: 
+        input(type="textbox" id="isbn" size="50")
+        br
+        br
+        label(for="num_pages") Page Count: 
+        input(type="textbox" id="num_pages" size="50")
+        br
+        br
+        label(for="stock") Stock: 
+        input(type="textbox" id="stock" size="50")
+        br
+        br
+        label(for="price") Price: 
+        input(type="textbox" id="price" size="50")
+        br
+        br
+        button(type='button' onclick='addBook()') Submit
+    script(src="/js/query.js")

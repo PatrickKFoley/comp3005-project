@@ -1,0 +1,20 @@
+html
+    head 
+        title #{book.title}
+        link(rel='stylesheet' href='/styles.css')
+    body
+        include ./partials/header.pug
+        br
+        |Title: #{book.title}
+        br
+        |Author: #{book.author}
+        br
+        |Price: $#{book.price}
+        br
+        |Page Count: #{book.numPages}
+        br
+        |In Stock: #{book.stock}
+        br
+        br
+        button(type='button' onclick='addToCart()') Add to Cart
+    script(href="/js/query.js")

@@ -1,0 +1,20 @@
+html
+    head
+        title Checkout
+        link(rel='stylesheet' href='./styles.css')
+    body
+        include ./partials/header.pug
+        br
+        |Checkout
+        br
+        br
+        label(for="billing_address") Billing Address: 
+        input(type="textbox" id="billing_address" size="50")
+        br
+        br
+        label(for="shipping_address") Shipping Address: 
+        input(type="textbox" id="shipping_address" size="50")
+        br
+        br
+        button(type='button' onclick='completeOrder()') Complete Order
+    script(src="/js/query.js")

@@ -1,0 +1,24 @@
+header
+    ul
+        li
+            a(href='/') Home
+        if loggedin
+            if user.owner 
+                li
+                    a(href='/addbook') Add Book
+                li
+                    a(href='/publishers') Publishers
+                li
+                    a(href='/sales') Sales   
+            else
+                li
+                a(href='/books') Books
+            li(class='user')
+                a(href='/carts'+user.username) Cart
+            li(class='user')
+                a(href='/logout') Log Out
+        else
+            li
+                a(href='/register') Register
+            li(class='user')
+                a(href='/login') Log In

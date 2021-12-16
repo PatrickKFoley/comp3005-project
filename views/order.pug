@@ -1,0 +1,14 @@
+html
+    head 
+        title #{order.order_no}
+        link(rel='stylesheet' href='/styles.css')
+    body
+        include ./partials/header.pug
+        br
+        |Order No.: #{order.order_no}
+        br
+        |Date Ordered: #{order.date}
+        br
+        |Delivery Date: #{order.delivery_date}
+        br
+        |Delivered: #{order.delivered}

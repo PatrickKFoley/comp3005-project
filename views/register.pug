@@ -1,0 +1,20 @@
+html
+    head
+        title Registration
+        link(rel='stylesheet' href='./styles.css')
+    body
+        include ./partials/header.pug
+        |Create a user account
+        br
+        br
+        label(for="username") Username: 
+        input(type="textbox" id="username" size="50")
+        br
+        br
+        label(for="password") Password: 
+        input(type="password" id="password" size="50")
+        br
+        br
+        button(type='button' onclick='createUser()') Submit
+
+        script(src="/js/authentication.js")

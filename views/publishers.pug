@@ -1,0 +1,20 @@
+html
+    head
+        title Publishers
+        link(rel='stylesheet' href='./styles.css')
+    body
+        include ./partials/header.pug
+        br
+        |Search
+        br
+        input(type="text" id="user" size="50")
+        button(type='button' onclick='searchPublishers()') Search
+        br
+        br
+        if query==""
+            |Orders that match search:
+        else
+            |Orders that match #{query} 
+        #orders
+            include ./partials/publishers_partial.pug
+        script(src="/js/query.js")
