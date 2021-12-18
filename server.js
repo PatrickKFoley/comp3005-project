@@ -8,17 +8,35 @@ const database = new Sequelize('postgres://postgres:password@localhost:5432/post
 
 const bookModel = require('./models/sequelize/bookModel.js');
 const bookGenreModel = require('./models/sequelize/BookGenreModel.js')
+const cartModel = require('./models/sequelize/CartModel.js')
 const publisherModel = require('./models/sequelize/PublisherModel.js')
-const PublisherPhoneNumberModel = require('./models/PublisherPhoneNumberModel.js');
-const purchaseModel = require('./models/sequelize/purchaseModel.js')
-const userModel = require('./models/sequelize/userModel.js')
+const publisherPhoneNumberModel = require('./models/PublisherPhoneNumberModel.js');
+const publishesModel = require('./models/Publishes.js');
+const purchaseModel = require('./models/sequelize/PurchaseModel.js')
+const purchasesModel = require('./models/sequelize/PurchasesModel.js')
+const userModel = require('./models/sequelize/UserModel.js')
 
 const book = bookModel(database, Sequelize)
 const bookGenre = bookGenreModel(database, Sequelize)
+const cart = cartModel(database, Sequelize);
 const publisher = publisherModel(database, Sequelize)
-const publisherPhoneNumber = PublisherPhoneNumberModel(database, Sequelize);
-const purchase = purchaseModel(database, Sequelize)
-const user = userModel(database, Sequelize)
+const publisherPhoneNumber = publisherPhoneNumberModel(database, Sequelize);
+const publishes = publishesModel(database, Sequelize);
+const purchase = purchaseModel(database, Sequelize);
+const purchases = purchasesModel(database, Sequelize);
+const user = userModel(database, Sequelize);
+
+//many to many relationship between Publishers and Books
+publisher.belongsToMany(book, {through: publishes});
+book.belongsToMany(publisher, {through: publishes});
+
+//many to many relationship between User and Book, Purchases
+user.belongsToMany(book, {through: purchases});
+book.belongsToMany(user, {through: purchases});
+
+//many to many relationship between User and Book, Cart
+user.belongsToMany(book, {foreignKey: user.userID, through: cart});
+book.belongsToMany(user, {foreignKey: book.ISBN, through: cart});
 
 const app = express();
 const port = 3000;
@@ -365,12 +383,36 @@ function addPublisher(req, res){
 
 //Adds to cart
 function addToCart(req, res){
-
+  (async() => {
+    try {
+      let username = req.session.username;
+      let isbn = req.body.isbn;
+      const cartEntry = await cart.create({ username, isbn });
+      res.status(201);
+      res.send("Item Added to Cart");
+    } catch(err) {
+      console.log(err)
+      res.status(404);
+      res.send("Something went wrong");
+    }
+  })();
 };
 
 //Removes from cart
 function removeFromCart(req, res){
-
+  (async() => {
+    try {
+      let username = req.session.username;
+      let isbn = req.body.isbn;
+      await cart.destroy({ where : {username, isbn} });
+      res.status(201);
+      res.send("Item Removed From Cart");
+    } catch(err) {
+      console.log(err)
+      res.status(404);
+      res.send("Something went wrong");
+    }
+  })();
 };
 
 function completeOrder(req, res){
