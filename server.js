@@ -87,7 +87,7 @@ function ownerAuth(req, res, next){
 //Gets homepage
 function getHomePage(req, res){
   res.status(200);
-  res.send(pug.renderFile("./views/home.pug", {homePageTitle : 'Look Inna Book', user: {username: req.session.username, loggedin: req.session.loggedin, owner : req.session.owner}}));
+  res.send(pug.renderFile("./views/home.pug", {homePageTitle : 'Look Inna Book', user: req.session.user, loggedin: req.session.loggedin}));
 };
 
 //Gets login page
@@ -115,7 +115,7 @@ function logout(req, res){
 //Provides page for user to register
 function getRegisterPage(req, res){
   res.status(200);
-  res.send(pug.renderFile("./views/register.pug", {user: {username: req.session.username, loggedin: req.session.loggedin, owner : req.session.owner}}));
+  res.send(pug.renderFile("./views/register.pug", {user: req.session.user, loggedin: req.session.loggedin}));
 };
 
 //adds a new user to the db
@@ -198,7 +198,7 @@ function getBook(req, res){
 
       console.log(genres[0]);
       res.status(200);
-      res.send(pug.renderFile("./views/book.pug", {book: book[0][0], user: req.session, genres: genres[0]}));
+      res.send(pug.renderFile("./views/book.pug", {book: book[0][0], user: req.session.user, loggedin: req.session.loggedin, genres: genres[0]}));
     } catch(err) {
       console.log(err)
       res.status(404);
@@ -268,7 +268,7 @@ function getCart(req, res){
 //Get checkout page
 function getCheckoutPage(req, res){
   res.status(200);
-  res.send(pug.renderFile("./views/checkout.pug", {user: {username: req.session.username, loggedin: req.session.loggedin, owner : req.session.owner}}));
+  res.send(pug.renderFile("./views/checkout.pug", {user: req.session.user, loggedin: req.session.loggedin}));
 };
 
 //Get page to search for orders. May have query params
@@ -289,10 +289,10 @@ function getOrdersPage(req, res){
 
       res.status(200);
       if(req.query.num=="1"){
-        res.send(pug.renderFile("./views/partials/orders_partial.pug", {user: {username: req.session.username, loggedin: req.session.loggedin, owner : req.session.owner}, orders: orders[0]}));
+        res.send(pug.renderFile("./views/partials/orders_partial.pug", {user: req.session.user, loggedin: req.session.loggedin, orders: orders[0]}));
       }
       else{
-        res.send(pug.renderFile("./views/orders.pug", {user: {username: req.session.username, loggedin: req.session.loggedin, owner : req.session.owner}, orders: orders[0]}));
+        res.send(pug.renderFile("./views/orders.pug", {user: req.session.user, loggedin: req.session.loggedin, orders: orders[0]}));
       }
 
     } 
@@ -394,14 +394,10 @@ function addPublisher(req, res){
         phoneNums = phoneNums.split(" ").join("").split(",")
     
         for (var i = 0; i < phoneNums.length; i++){
-            try{
-                await publisherPhoneNumber.create({name: name, phoneNum: phoneNums[i]})
-            } catch(err){
-                console.log(err)
-                res.json({message: "Something went wrong - genre probably already associated with book"})
-            }
+          await publisherPhoneNumber.create({name: name, phoneNum: phoneNums[i]})
         }
-        res.json({message: "POST received from addGenre"})
+        res.status(201);
+        res.send();
     } catch(err) {
         console.log(err)
         res.json({message: "Something went wrong - Book probably already in db"})

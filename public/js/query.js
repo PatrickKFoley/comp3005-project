@@ -80,7 +80,6 @@ function addBook(){
 
 	req.onreadystatechange = function() {
 		if(this.readyState == 4 && this.status == 201){
-            console.log('here')
             location.href = "/books/" + isbn
 		}
         else if(this.readyState == 4 && this.status == 400){
@@ -115,8 +114,7 @@ function addPublisher(){
 
 	req.onreadystatechange = function() {
 		if(this.readyState == 4 && this.status == 201){
-			alert("Publisher Added Successfully");
-            location.href = this.responseText;
+            location.href = "/publishers/" + name
 		}
         else if(this.readyState == 4 && this.status == 400){
             alert(this.responseText);
