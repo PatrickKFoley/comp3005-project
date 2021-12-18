@@ -9,17 +9,20 @@ const database = new Sequelize('postgres://postgres:password@localhost:5432/post
 const bookModel = require('./models/sequelize/bookModel.js');
 const bookGenreModel = require('./models/sequelize/BookGenreModel.js')
 const publisherModel = require('./models/sequelize/PublisherModel.js')
+const PublisherPhoneNumberModel = require('./models/PublisherPhoneNumberModel.js');
 const purchaseModel = require('./models/sequelize/purchaseModel.js')
 const userModel = require('./models/sequelize/userModel.js')
 
 const book = bookModel(database, Sequelize)
 const bookGenre = bookGenreModel(database, Sequelize)
 const publisher = publisherModel(database, Sequelize)
+const publisherPhoneNumber = PublisherPhoneNumberModel(database, Sequelize);
 const purchase = purchaseModel(database, Sequelize)
 const user = userModel(database, Sequelize)
 
 const app = express();
 const port = 3000;
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(
   session({
@@ -35,6 +38,9 @@ database.authenticate().then(() => {console.log('Connection has been established
 }).catch(err => {console.error('Unable to connect to the database:', err);
 });
 
+app.put("/carts/:cid", removeFromCart);
+
+app.post("/carts", addToCart);
 app.post('/books', addBook);
 app.post('/login', login);
 app.post('/register', registerUser);
@@ -183,10 +189,12 @@ function getBook(req, res){
   (async() => {
     try {
       const book = await database.query("SELECT * FROM books WHERE isbn = '" + req.params.isbn + "'", {type: Sequelize.SELECT})
+      res.status(200);
       res.send(pug.renderFile("./views/book.pug", {book: book[0][0], user: req.session}));
     } catch(err) {
       console.log(err)
-      res.json({message: "Something went wrong"})
+      res.status(404);
+      res.send("Something went wrong");
     }
   })();
 }
@@ -254,10 +262,10 @@ function getOrdersPage(req, res){
       let orderNo = req.query.orderNo;
       if (orderNo == undefined) {
         //send everything
-        query = 'SELECT title, isbn FROM books';
+        query = 'SELECT OrderNo FROM purchases';
       } else {
         //find what they actually want and send it
-        query = "SELECT title, isbn FROM books WHERE title LIKE '%" + orderNo + "%'";
+        query = "SELECT OrderNo FROM purchases WHERE OrderNo LIKE '%" + orderNo + "%'";
       }
 
       const orders = await database.query(query, {type: Sequelize.SELECT})
@@ -281,35 +289,89 @@ function getOrdersPage(req, res){
 
 //Get order with specific primary key
 function getOrder(req, res){
-
+  (async() => {
+    try {
+      const order = await database.query("SELECT * FROM purchases WHERE OrderNum = '" + req.params.orderNo + "'", {type: Sequelize.SELECT});
+      res.status(200);
+      res.send(pug.renderFile("./views/order.pug", {order: order[0][0], user: req.session}));
+    } catch(err) {
+      console.log(err)
+      res.status(404);
+      res.send("Something went wrong");
+    }
+  })();
 };
 
 //Get list of publishers. May contain query params
 function getPublishers(req, res){
+  (async () => {
+    try {
+      let query = ""
+      let name = req.query.name;
+      if (orderNo == undefined) {
+        //send everything
+        query = 'SELECT name FROM publisher';
+      } else {
+        //find what they actually want and send it
+        query = "SELECT name FROM publisher WHERE name LIKE '%" + name + "%'";
+      }
 
+      const publishers = await database.query(query, {type: Sequelize.SELECT})
+
+      res.status(200);
+      if(req.query.num=="1"){
+        res.send(pug.renderFile("./views/partials/publisher_partial.pug", {user: {username: req.session.username, loggedin: req.session.loggedin, owner : req.session.owner}, publishers: publishers[0]}));
+      }
+      else{
+        res.send(pug.renderFile("./views/publishers.pug", {user: {username: req.session.username, loggedin: req.session.loggedin, owner : req.session.owner}, publishers: publishers[0]}));
+      }
+
+    } 
+    catch(err) {
+      console.log(err)
+      res.status(404);
+      res.send("Something went wrong");
+    }
+  })();
 };
 
 //Get a specific publisher
 function getPublisher(req, res){
-
+  (async() => {
+    try {
+      const publisher = await database.query("SELECT * FROM publisher WHERE name = '" + req.params.name + "'", {type: Sequelize.SELECT});
+      res.status(200);
+      res.send(pug.renderFile("./views/publisher.pug", {publisher: publisher[0][0], user: req.session}));
+    } catch(err) {
+      console.log(err)
+      res.status(404);
+      res.send("Something went wrong");
+    }
+  })();
 };
 
 //Get a page which displays store stats. Will need to do some
 // analysis for this perhaps.
 function getSales(req, res){
-
+  sales = {income : 0, expenses : 0, genres : {}, authors : {}};
+  res.status(200);
+  res.send(pug.renderFile("./views/sales.pug", {sales, user: req.session}));
 };
 
-//MAYBE?? add new publisher
+//add new publisher
 function addPublisher(req, res){
 
 };
 
-//manip for cart. Add and remove books
-//Could have add as put and remove as post idk
-app.put("/carts/:cid", (req, res) => {
+//Adds to cart
+function addToCart(req, res){
 
-});
+};
+
+//Removes from cart
+function removeFromCart(req, res){
+
+};
 
 function completeOrder(req, res){
   (async () => {

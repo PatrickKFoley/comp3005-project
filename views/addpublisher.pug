@@ -1,0 +1,37 @@
+html
+    head
+        title Add Publisher
+        link(rel='stylesheet' href='./styles.css')
+    body
+        include ./partials/header.pug
+        br
+        |Add Publisher To DB
+        br
+        br
+        label(for="name") Name: 
+        br
+        input(type="textbox" id="title" size="50")
+        br
+        br
+        label(for="address") Address: 
+        br
+        input(type="textbox" id="author" size="50")
+        br
+        br
+        label(for="email") Email: 
+        br
+        input(type="textbox" id="isbn" size="50")
+        br
+        br
+        label(for="bankNum") Bank Account Number: 
+        br
+        input(type="textbox" id="num_pages" size="50")
+        br
+        br
+        label(for="phoneNum") Phone Number: 
+        br
+        input(type="textbox" id="stock" size="50")
+        br
+        br
+        button(type='button' onclick='addPublisher()') Submit
+    script(src="/js/query.js")

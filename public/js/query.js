@@ -69,7 +69,7 @@ function addBook(){
         pageCount,
         stock,
         price
-    }
+    };
 
     //Send data to server
     let req = new XMLHttpRequest();
@@ -87,6 +87,41 @@ function addBook(){
 	req.open("PUT", "http://localhost:3000/books/"+isbn);
 	req.setRequestHeader("Content-Type", "application/json");
 	let data = JSON.stringify(book);
+	req.send(data);
+}
+
+//Sends request to server to add book to db
+function addPublisher(){
+    let name = document.getElementById("name").value;
+    let address = document.getElementById("address").value;
+    let email = document.getElementById("email").value;
+    let bankNum = document.getElementById("bankNum").value;
+    let phoneNum = document.getElementById("phoneNum").value;
+    
+    let publisher = {
+        name,
+        address,
+        email,
+        bankNum,
+        phoneNum,
+    };
+
+    //Send data to server
+    let req = new XMLHttpRequest();
+
+	req.onreadystatechange = function() {
+		if(this.readyState == 4 && this.status == 201){
+			alert("Publisher Added Successfully");
+            location.href = this.responseText;
+		}
+        else if(this.readyState == 4 && this.status == 400){
+            alert(this.responseText);
+        }
+	}
+
+	req.open("PUT", "http://localhost:3000/publisher/"+name);
+	req.setRequestHeader("Content-Type", "application/json");
+	let data = JSON.stringify(publisher);
 	req.send(data);
 }
 
