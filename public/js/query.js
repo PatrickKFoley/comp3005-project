@@ -202,3 +202,25 @@ function completeOrder(){
 	let data = JSON.stringify(empty);
 	req.send(data);
 }
+
+function removeFromStore(clicked_id){
+        //Purposefully empty json because server will use session.username to query
+        let empty = {};
+        //Send data to server
+        let req = new XMLHttpRequest();
+    
+        req.onreadystatechange = function() {
+            if(this.readyState == 4 && this.status == 201){
+                alert("Your order has been placed!");
+                location.href = this.responseText;
+            }
+            else if(this.readyState == 4 && this.status == 400){
+                alert(this.responseText);
+            }
+        }
+    
+        req.open("PUT", "http://localhost:3000/books/"+clicked_id);
+        req.setRequestHeader("Content-Type", "application/json");
+        let data = JSON.stringify(empty);
+        req.send(data);
+}

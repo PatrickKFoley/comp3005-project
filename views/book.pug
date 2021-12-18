@@ -18,7 +18,6 @@ html
         |Genres include:
         ul
             each genre in genres
-                | #{genre.genre}, 
-                
-        button(type='button' onclick='addToCart()') Add to Cart
+                | #{genre.genre},       
+        button#book.isbn(type='button' onclick='addToCart(this.id)') Add to Cart
     script(href="/js/query.js")

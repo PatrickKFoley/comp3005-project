@@ -10,9 +10,8 @@ const bookModel = require('./models/sequelize/bookModel.js');
 const bookGenreModel = require('./models/sequelize/BookGenreModel.js')
 const cartModel = require('./models/sequelize/CartModel.js')
 const publisherModel = require('./models/sequelize/PublisherModel.js')
-const publisherPhoneNumberModel = require('./models/PublisherPhoneNumberModel.js');
-const publishesModel = require('./models/Publishes.js');
-const purchaseModel = require('./models/sequelize/PurchaseModel.js')
+const publisherPhoneNumberModel = require('./models/sequelize/PublisherPhoneNumberModel.js');
+const publishesModel = require('./models/sequelize/PublishesModel.js');
 const purchasesModel = require('./models/sequelize/PurchasesModel.js')
 const userModel = require('./models/sequelize/UserModel.js')
 
@@ -22,7 +21,6 @@ const cart = cartModel(database, Sequelize);
 const publisher = publisherModel(database, Sequelize)
 const publisherPhoneNumber = publisherPhoneNumberModel(database, Sequelize);
 const publishes = publishesModel(database, Sequelize);
-const purchase = purchaseModel(database, Sequelize);
 const purchases = purchasesModel(database, Sequelize);
 const user = userModel(database, Sequelize);
 
@@ -57,6 +55,7 @@ database.authenticate().then(() => {console.log('Connection has been established
 });
 
 app.put("/carts/:cid", removeFromCart);
+app.put("/books/:isbn", removeFromStore);
 
 app.post("/carts", addToCart);
 app.post('/books', addBook);
@@ -164,10 +163,16 @@ function login(req, res){
 
           if (req.body.username == properUser[0].dataValues.username && req.body.password == properUser[0].dataValues.password){
               req.session.loggedin = true;
-              req.session.user = properUser[0].dataValues;
+              req.session.user = {};
+              req.session.owner = properUser[0].dataValues.owner;
+              req.session.username = properUser[0].dataValues.username;
+          }
+          else{
+            res.status(404);
+            res.send("Password and username do not exist");
           }
           res.status(200);
-          res.send(pug.renderFile("./views/login.pug", {user: req.session.user, loggedin: req.session.loggedin}));
+          res.send(pug.renderFile("./views/home.pug", {homePageTitle : 'Look Inna Book', user: req.session.user, loggedin: req.session.loggedin}));
       } catch(err) {
           console.log(err)
           res.json({message: "Something went wrong"})
@@ -451,6 +456,21 @@ function removeFromCart(req, res){
       res.send("Item Removed From Cart");
     } catch(err) {
       console.log(err)
+      res.status(404);
+      res.send("Something went wrong");
+    }
+  })();
+};
+
+//Removes Book from store
+function removeFromStore(req, res){
+  (async () => {
+    try {
+      await book.destroy({where : {isbn : req.session.isbn}});
+      res.status(201);
+      res.send("http://localhost:3000/");
+    }
+    catch{
       res.status(404);
       res.send("Something went wrong");
     }

@@ -24,6 +24,9 @@ function login(){
             alert("Logged in successfully");
             location.href = this.responseText;
         }
+        else if(this.readyState == 4 && this.status == 404){
+            alert(this.responseText);
+        }
     }
 
     req.open("POST", "http://localhost:3000/login");

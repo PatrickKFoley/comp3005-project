@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => { return sequelize.define('publisherP
         allowNull: false
     },
     phoneNum: {
-        type: DataTypes.BIGINT,
+        type: DataTypes.STRING,
         primaryKey: true,
         allowNull: false
     }

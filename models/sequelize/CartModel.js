@@ -1,5 +1,5 @@
 module.exports = (sequelize, Datatypes) => {
-    return sequelize.define('Cart', {
+    return sequelize.define('cart', {
         isbn: {
             type: Datatypes.BIGINT,
             primaryKey: true,
