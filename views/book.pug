@@ -15,6 +15,9 @@ html
         br
         |In Stock: #{book.stock}
         br
+        |Published by: 
+        a(href="/publishers/"+publisher.name) #{publisher.name}
+        br
         |Genres include:
         ul
             each genre in genres

@@ -25,8 +25,8 @@ const purchases = purchasesModel(database, Sequelize);
 const user = userModel(database, Sequelize);
 
 //many to many relationship between Publishers and Books
-publisher.belongsToMany(book, {through: publishes});
-book.belongsToMany(publisher, {through: publishes});
+publisher.belongsToMany(book, {foreignKey: "name", through: publishes});
+book.belongsToMany(publisher, {foreignKey: "name", through: publishes});
 
 //many to many relationship between User and Book, Purchases
 user.belongsToMany(book, {through: purchases});
@@ -82,6 +82,7 @@ app.get('/sales', getSales);
 
 //publisher.sync({alter: true});
 //publisherPhoneNumber.sync({alter: true});
+//publishes.sync({force: true});
 
 //makes sure a user is signed in
 function auth(req, res, next){
@@ -218,10 +219,11 @@ function getBook(req, res){
     try {
       const book = await database.query("SELECT * FROM books WHERE isbn = '" + req.params.isbn + "'", {type: Sequelize.SELECT})
       const genres = await database.query('SELECT * FROM "bookGenres" WHERE isbn = ' + req.params.isbn, {type: Sequelize.SELECT})
+      const publisher = await database.query('SELECT name FROM publishes WHERE isbn = ' + req.params.isbn, {type: Sequelize.SELECT})
 
-      console.log(genres[0]);
+      console.log(publisher[0]);
       res.status(200);
-      res.send(pug.renderFile("./views/book.pug", {book: book[0][0], user: req.session.user, loggedin: req.session.loggedin, genres: genres[0]}));
+      res.send(pug.renderFile("./views/book.pug", {book: book[0][0], publisher: publisher[0][0], user: req.session.user, loggedin: req.session.loggedin, genres: genres[0]}));
     } catch(err) {
       console.log(err)
       res.status(404);
@@ -236,11 +238,13 @@ function getAddBookPage(req, res){
   res.send(pug.renderFile("./views/addbook.pug", {user: req.session.user, loggedin: req.session.loggedin}));
 };
 
-//add a book - ADD BOOK AND PUBLISHER TO PUBLISHES RELATION
+//add a book
 function addBook(req, res){
   (async () => {
       try {
           //ensure that the publisher exists
+          console.log(req.body)
+
           const publisher = await database.query("SELECT * FROM publishers WHERE name = '" + req.body.publisher + "'", {type: Sequelize.SELECT});
           if (publisher[0][0] == undefined){
             console.log("publisher not found")
@@ -249,7 +253,8 @@ function addBook(req, res){
             return;
           }
 
-          //add to the publishes relationship
+          //creat the entry in the publishes table
+          const newPublishes = await publishes.create({isbn: req.body.isbn, name: req.body.publisher})
 
           //create book
           const newBook = await book.create({isbn: req.body.isbn, title: req.body.title, author: req.body.author, numPages: req.body.numPages, stock: req.body.stock, price: req.body.price});
@@ -260,7 +265,12 @@ function addBook(req, res){
           genres = req.body.genres;
           genres = genres.split(" ").join("").split(",")
           for (var i = 0; i < genres.length; i++){
-            await bookGenre.create({isbn: isbn, genre: genres[i]})
+            try {
+              await bookGenre.create({isbn: isbn, genre: genres[i]})
+            }
+            catch(err){
+              console.log("same genre was entered twice - skipping second")
+            }
           }
           res.status(201);
           res.send();
@@ -358,7 +368,6 @@ function getPublishers(req, res){
       }
 
       const publishers = await database.query(query, {type: Sequelize.SELECT})
-
       res.status(200);
       if(req.query.num=="1"){
         res.send(pug.renderFile("./views/partials/publisher_partial.pug", {user: req.session.user, loggedin: req.session.loggedin, publishers: publishers[0]}));
@@ -376,13 +385,18 @@ function getPublishers(req, res){
   })();
 };
 
-//Get a specific publisher - ADD BOOKS THAT THEY PUBLISH
+//Get a specific publisher
 function getPublisher(req, res){
   (async() => {
     try {
       const publisher = await database.query("SELECT * FROM publishers WHERE name = '" + req.params.name + "'", {type: Sequelize.SELECT});
+      const publishes = await database.query("SELECT books.isbn, name, title FROM publishes, books WHERE publishes.isbn = books.isbn AND name = '" + req.params.name + "'", {type: Sequelize.SELECT});
+      const phoneNums = await database.query("SELECT * FROM \"publisherPhoneNums\" WHERE name = '" + req.params.name + "'", {type: Sequelize.SELECT});
+
+      console.log(phoneNums)
+
       res.status(200);
-      res.send(pug.renderFile("./views/publisher.pug", {publisher: publisher[0][0], user: req.session.user, loggedin: req.session.loggedin}));
+      res.send(pug.renderFile("./views/publisher.pug", {publisher: publisher[0][0], publishes: publishes[0], user: req.session.user, loggedin: req.session.loggedin}));
     } catch(err) {
       console.log(err)
       res.status(404);
@@ -417,7 +431,12 @@ function addPublisher(req, res){
         phoneNums = phoneNums.split(" ").join("").split(",")
     
         for (var i = 0; i < phoneNums.length; i++){
-          await publisherPhoneNumber.create({name: name, phoneNum: phoneNums[i]})
+          try{
+            await publisherPhoneNumber.create({name: name, phoneNum: phoneNums[i]})
+          }
+          catch(err){
+            console.log("same phone number added twice - skipping second")
+          }
         }
         res.status(201);
         res.send();
