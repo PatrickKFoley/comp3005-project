@@ -213,7 +213,7 @@ function getAddBookPage(req, res){
   res.send(pug.renderFile("./views/addbook.pug", {user: req.session.user, loggedin: req.session.loggedin}));
 };
 
-//add a book
+//add a book - ADD BOOK AND PUBLISHER TO PUBLISHES RELATION
 function addBook(req, res){
   (async () => {
       try {
@@ -353,13 +353,13 @@ function getPublishers(req, res){
   })();
 };
 
-//Get a specific publisher
+//Get a specific publisher - ADD BOOKS THAT THEY PUBLISH
 function getPublisher(req, res){
   (async() => {
     try {
-      const publisher = await database.query("SELECT * FROM publisher WHERE name = '" + req.params.name + "'", {type: Sequelize.SELECT});
+      const publisher = await database.query("SELECT * FROM publishers WHERE name = '" + req.params.name + "'", {type: Sequelize.SELECT});
       res.status(200);
-      res.send(pug.renderFile("./views/publisher.pug", {publisher: publisher[0][0], user: req.session}));
+      res.send(pug.renderFile("./views/publisher.pug", {publisher: publisher[0][0], user: req.session.user, loggedin: req.session.loggedin}));
     } catch(err) {
       console.log(err)
       res.status(404);
