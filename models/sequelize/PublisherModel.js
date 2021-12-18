@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => { return sequelize.define('publisher'
         allowNull: false
     },
     bankAccountNum: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false
     }
 },{

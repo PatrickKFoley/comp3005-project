@@ -15,6 +15,10 @@ html
         br
         |In Stock: #{book.stock}
         br
-        br
+        |Genres include:
+        ul
+            each genre in genres
+                | #{genre.genre}, 
+                
         button(type='button' onclick='addToCart()') Add to Cart
     script(href="/js/query.js")

@@ -9,7 +9,7 @@ const database = new Sequelize('postgres://postgres:password@localhost:5432/post
 const bookModel = require('./models/sequelize/bookModel.js');
 const bookGenreModel = require('./models/sequelize/BookGenreModel.js')
 const publisherModel = require('./models/sequelize/PublisherModel.js')
-const PublisherPhoneNumberModel = require('./models/PublisherPhoneNumberModel.js');
+const PublisherPhoneNumberModel = require('./models/sequelize/PublisherPhoneNumberModel.js');
 const purchaseModel = require('./models/sequelize/purchaseModel.js')
 const userModel = require('./models/sequelize/userModel.js')
 
@@ -45,7 +45,7 @@ app.post('/books', addBook);
 app.post('/login', login);
 app.post('/register', registerUser);
 app.post('/order', completeOrder);
-app.post('publishers', addPublisher);
+app.post('/publishers', addPublisher);
 
 app.get('/', getHomePage)
 app.get('/books', getBooks);
@@ -59,8 +59,12 @@ app.get('/checkout', getCheckoutPage);
 app.get('/orders', getOrdersPage);
 app.get('/orders/:orderNum', getOrder);
 app.get('/publishers', getPublishers);
+app.get('/addpublisher', getAddPublisherPage);
 app.get('/publishers/:name', getPublisher);
 app.get('/sales', getSales);
+
+//publisher.sync({alter: true});
+//publisherPhoneNumber.sync({alter: true});
 
 //makes sure a user is signed in
 function auth(req, res, next){
@@ -93,7 +97,7 @@ function getLoginPage(req, res){
     return;
   }
   res.status(200);
-  res.send(pug.renderFile("./views/login.pug", {user: {username: req.session.username, loggedin: req.session.loggedin, owner : req.session.owner}}));
+  res.send(pug.renderFile("./views/login.pug", {user: req.session.user, loggedin: req.session.loggedin}));
 };
 
 //Logs user out
@@ -118,9 +122,10 @@ function getRegisterPage(req, res){
 function registerUser(req, res){
   (async () => {
       try {
-          const newUser = await user.create({username: req.body.username, email: req.body.email, address: req.body.address, name: req.body.name, password: req.body.password});
-
-          res.json({message: "POST received from registerUser"})
+          const newUser = await user.create({username: req.body.username, email: req.body.email, address: req.body.address, name: req.body.name, password: req.body.password, owner: req.body.owner});
+          console.log(newUser.email.slice(-10))
+          res.status(200);
+          res.send(pug.renderFile("./views/login.pug", {user: req.session.user, loggedin: req.session.loggedin}));
       } catch(err) {
           console.log(err)
           res.json({message: "Something went wrong - User probably already in db"})
@@ -136,7 +141,6 @@ function login(req, res){
               req.session.loggedin = false;
               req.session.user = null;
           }
-          console.log(req.body)
           const properUser = await database.query("SELECT * FROM users WHERE username = '" + req.body.username + "'", {model: user});
           console.log(properUser[0].dataValues);
 
@@ -144,7 +148,8 @@ function login(req, res){
               req.session.loggedin = true;
               req.session.user = properUser[0].dataValues;
           }
-          res.json({message: "Seems like that worked"})
+          res.status(200);
+          res.send(pug.renderFile("./views/login.pug", {user: req.session.user, loggedin: req.session.loggedin}));
       } catch(err) {
           console.log(err)
           res.json({message: "Something went wrong"})
@@ -170,10 +175,10 @@ function getBooks(req, res){
 
       res.status(200);
       if(req.query.num=="1"){
-        res.send(pug.renderFile("./views/partials/books_partial.pug", {user: {username: req.session.username, loggedin: req.session.loggedin, owner : req.session.owner}, books: books[0]}));
+        res.send(pug.renderFile("./views/partials/books_partial.pug", {user: req.session.user, loggedin: req.session.loggedin, books: books[0]}));
       }
       else{
-        res.send(pug.renderFile("./views/books.pug", {user: {username: req.session.username, loggedin: req.session.loggedin, owner : req.session.owner}, books: books[0]}));
+        res.send(pug.renderFile("./views/books.pug", {user: req.session.user, loggedin: req.session.loggedin, books: books[0]}));
       }
 
     } 
@@ -189,8 +194,11 @@ function getBook(req, res){
   (async() => {
     try {
       const book = await database.query("SELECT * FROM books WHERE isbn = '" + req.params.isbn + "'", {type: Sequelize.SELECT})
+      const genres = await database.query('SELECT * FROM "bookGenres" WHERE isbn = ' + req.params.isbn, {type: Sequelize.SELECT})
+
+      console.log(genres[0]);
       res.status(200);
-      res.send(pug.renderFile("./views/book.pug", {book: book[0][0], user: req.session}));
+      res.send(pug.renderFile("./views/book.pug", {book: book[0][0], user: req.session, genres: genres[0]}));
     } catch(err) {
       console.log(err)
       res.status(404);
@@ -202,28 +210,37 @@ function getBook(req, res){
 //Get the page for an owner to add a book
 function getAddBookPage(req, res){
   res.status(200);
-  res.send(pug.renderFile("./views/addbook.pug", {user: {username: req.session.username, loggedin: req.session.loggedin, owner : req.session.owner}}));
+  res.send(pug.renderFile("./views/addbook.pug", {user: req.session.user, loggedin: req.session.loggedin}));
 };
 
 //add a book
 function addBook(req, res){
   (async () => {
       try {
+          //ensure that the publisher exists
+          const publisher = await database.query("SELECT * FROM publishers WHERE name = '" + req.body.publisher + "'", {type: Sequelize.SELECT});
+          if (publisher[0][0] == undefined){
+            console.log("publisher not found")
+            res.status(400);
+            res.send(responseText = "Sorry, please create publisher: " + req.body.publisher + " before adding this book")
+            return;
+          }
+
+          //add to the publishes relationship
+
+          //create book
           const newBook = await book.create({isbn: req.body.isbn, title: req.body.title, author: req.body.author, numPages: req.body.numPages, stock: req.body.stock, price: req.body.price});
           var isbn = newBook.dataValues.isbn
 
-          var genres = JSON.parse(req.body.genre)
-      
+          //create genres in the bookGenres relationship
+          console.log(req.body.genres)
+          genres = req.body.genres;
+          genres = genres.split(" ").join("").split(",")
           for (var i = 0; i < genres.length; i++){
-              try{
-                  await bookGenre.create({isbn: isbn, genre: genres[i]})
-                  console.log(genres[i])
-              } catch(err){
-                  console.log(err)
-                  res.json({message: "Something went wrong - genre probably already associated with book"})
-              }
+            await bookGenre.create({isbn: isbn, genre: genres[i]})
           }
-          res.json({message: "POST received from addGenre"})
+          res.status(201);
+          res.send();
       } catch(err) {
           console.log(err)
           res.json({message: "Something went wrong - Book probably already in db"})
@@ -308,22 +325,23 @@ function getPublishers(req, res){
     try {
       let query = ""
       let name = req.query.name;
-      if (orderNo == undefined) {
+      console.log(name);
+      if (name == undefined) {
         //send everything
-        query = 'SELECT name FROM publisher';
+        query = 'SELECT name FROM publishers';
       } else {
         //find what they actually want and send it
-        query = "SELECT name FROM publisher WHERE name LIKE '%" + name + "%'";
+        query = "SELECT name FROM publishers WHERE name LIKE '%" + name + "%'";
       }
 
       const publishers = await database.query(query, {type: Sequelize.SELECT})
 
       res.status(200);
       if(req.query.num=="1"){
-        res.send(pug.renderFile("./views/partials/publisher_partial.pug", {user: {username: req.session.username, loggedin: req.session.loggedin, owner : req.session.owner}, publishers: publishers[0]}));
+        res.send(pug.renderFile("./views/partials/publisher_partial.pug", {user: req.session.user, loggedin: req.session.loggedin, publishers: publishers[0]}));
       }
       else{
-        res.send(pug.renderFile("./views/publishers.pug", {user: {username: req.session.username, loggedin: req.session.loggedin, owner : req.session.owner}, publishers: publishers[0]}));
+        res.send(pug.renderFile("./views/publishers.pug", {user: req.session.user, loggedin: req.session.loggedin, publishers: publishers[0]}));
       }
 
     } 
@@ -358,9 +376,37 @@ function getSales(req, res){
   res.send(pug.renderFile("./views/sales.pug", {sales, user: req.session}));
 };
 
+//get the add publisher page
+function getAddPublisherPage(req, res){
+  res.status(200);
+  res.send(pug.renderFile("./views/addpublisher.pug", {user: req.session.user, loggedin: req.session.loggedin}));
+};
+
 //add new publisher
 function addPublisher(req, res){
+  (async () => {
+    try {
+        console.log(req.body)
+        const newPublisher = await publisher.create({name: req.body.name, address: req.body.address, email: req.body.email, bankAccountNum: req.body.bankNum});
+        var name = newPublisher.dataValues.name
 
+        phoneNums = req.body.phoneNum;
+        phoneNums = phoneNums.split(" ").join("").split(",")
+    
+        for (var i = 0; i < phoneNums.length; i++){
+            try{
+                await publisherPhoneNumber.create({name: name, phoneNum: phoneNums[i]})
+            } catch(err){
+                console.log(err)
+                res.json({message: "Something went wrong - genre probably already associated with book"})
+            }
+        }
+        res.json({message: "POST received from addGenre"})
+    } catch(err) {
+        console.log(err)
+        res.json({message: "Something went wrong - Book probably already in db"})
+    }
+  })();
 };
 
 //Adds to cart

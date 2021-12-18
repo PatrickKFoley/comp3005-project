@@ -7,7 +7,7 @@ html
         br
         |Search
         br
-        input(type="text" id="user" size="50")
+        input(type="text" id="book" size="50")
         button(type='button' onclick='searchBooks()') Search
         br
         br
@@ -17,4 +17,5 @@ html
             |Books that match #{query} 
         #books
             include ./partials/books_partial.pug
+        
         script(src="/js/query.js")

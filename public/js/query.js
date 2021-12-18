@@ -58,17 +58,21 @@ function addBook(){
     let title = document.getElementById("title").value;
     let author = document.getElementById("author").value;
     let isbn = document.getElementById("isbn").value;
-    let pageCount = document.getElementById("num_pages").value;
+    let numPages = document.getElementById("num_pages").value;
     let stock = document.getElementById("stock").value;
     let price = document.getElementById("price").value;
+    let genres = document.getElementById("genres").value;
+    let publisher = document.getElementById("publisher").value;
 
     let book = {
         title,
         author,
         isbn,
-        pageCount,
+        numPages,
         stock,
-        price
+        price,
+        genres,
+        publisher
     };
 
     //Send data to server
@@ -76,15 +80,15 @@ function addBook(){
 
 	req.onreadystatechange = function() {
 		if(this.readyState == 4 && this.status == 201){
-			alert("Book Created Successfully");
-            location.href = this.responseText;
+            console.log('here')
+            location.href = "/books/" + isbn
 		}
         else if(this.readyState == 4 && this.status == 400){
             alert(this.responseText);
         }
 	}
 
-	req.open("PUT", "http://localhost:3000/books/"+isbn);
+	req.open("POST", "http://localhost:3000/books");
 	req.setRequestHeader("Content-Type", "application/json");
 	let data = JSON.stringify(book);
 	req.send(data);
@@ -119,7 +123,7 @@ function addPublisher(){
         }
 	}
 
-	req.open("PUT", "http://localhost:3000/publisher/"+name);
+	req.open("POST", "http://localhost:3000/publishers");
 	req.setRequestHeader("Content-Type", "application/json");
 	let data = JSON.stringify(publisher);
 	req.send(data);

@@ -1,11 +1,11 @@
 module.exports = (sequelize, DataTypes) => { return sequelize.define('publisherPhoneNum', {
     name: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         primaryKey: true,
         allowNull: false
     },
     phoneNum: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.BIGINT,
         primaryKey: true,
         allowNull: false
     }

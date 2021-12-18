@@ -36,9 +36,23 @@ function login(){
 function createUser(){
     let username = document.getElementById("username").value;
     let password = document.getElementById("password").value;
+    let email = document.getElementById("email").value;
+    let address = document.getElementById("address").value;
+    let name = document.getElementById("name").value;
+    let owner = false;
+
     let user = {
         username,
-        password
+        password,
+        email,
+        address,
+        name,
+        owner
+    }
+
+    //if a new user has an "owner" email, make them an owner
+    if (email.slice(-10) == "@owner.com"){
+        user.owner = true;
     }
 
     if(!validInput(username)){
@@ -47,6 +61,18 @@ function createUser(){
     }
     if(!validInput(password)){
         alert("Password is invalid. Needs to be >2 characters");
+        return;
+    }
+    if(!validInput(email)){
+        alert("Email is invalid. Needs to be >2 characters");
+        return;
+    }
+    if(!validInput(address)){
+        alert("Address is invalid. Needs to be >2 characters");
+        return;
+    }
+    if(!validInput(name)){
+        alert("Name is invalid. Needs to be >2 characters");
         return;
     }
 
@@ -60,9 +86,10 @@ function createUser(){
 		}
         else if(this.readyState == 4 && this.status == 400){
             alert(this.responseText);
+            location.href = this.responseText;
         }
 	}
-
+    
 	req.open("POST", "http://localhost:3000/register");
 	req.setRequestHeader("Content-Type", "application/json");
 	let data = JSON.stringify(user);
