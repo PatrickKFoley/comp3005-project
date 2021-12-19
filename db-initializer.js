@@ -21,7 +21,7 @@ const purchases = purchasesModel(database, Sequelize);
 const user = userModel(database, Sequelize);
 
 //many to many relationship between Publishers and Books
-publisher.belongsToMany(book, {foreignKey: "name", through: {model: purchases, unique: false}});
+publisher.belongsToMany(book, {foreignKey: "name", through: {model: publishes, unique: false}});
 book.belongsToMany(publisher, {foreignKey: "isbn", through: {model: publishes, unique: false}});
 
 //many to many relationship between User and Book, Purchases
