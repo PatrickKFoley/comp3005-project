@@ -26,15 +26,15 @@ const user = userModel(database, Sequelize);
 
 //many to many relationship between Publishers and Books
 publisher.belongsToMany(book, {foreignKey: "name", through: publishes});
-book.belongsToMany(publisher, {foreignKey: "name", through: publishes});
+book.belongsToMany(publisher, {foreignKey: "title", through: publishes});
 
 //many to many relationship between User and Book, Purchases
 user.belongsToMany(book, {foreignKey: "username", through: purchases});
 book.belongsToMany(user, {foreignKey: "isbn", through: purchases});
 
 //many to many relationship between User and Book, Cart
-user.belongsToMany(book, {through: cart});
-book.belongsToMany(user, {through: cart});
+user.belongsToMany(book, {foreignKey: "username", through: cart});
+book.belongsToMany(user, {foreignKey: "isbn", through: cart});
 
 const app = express();
 const port = 3000;
@@ -177,18 +177,17 @@ function login(req, res){
               req.session.user.username = properUser[0].dataValues.username;
 
               res.status(200);
-              res.send(pug.renderFile("./views/home.pug", {homePageTitle : 'Look Inna Book', user: req.session.user, loggedin: req.session.loggedin}));
+              res.send("/");
           }
           else{
             res.status(404);
             res.send("Password and username do not exist");
             return;
           }
-          res.status(200);
-          res.send("/");
       } catch(err) {
           console.log(err)
-          res.json({message: "Something went wrong"})
+          res.status(404);
+          res.send("Something went wrong");
       }
   })();
 }
@@ -471,7 +470,15 @@ function addToCart(req, res){
     try {
       let username = req.session.user.username;
       let isbn = req.body.isbn;
-      const cartEntry = await cart.create({isbn: isbn, username: username});
+      let result = await cart.findOne({where : {username, isbn}});
+      if (result) {
+        await cart.update(
+          { quantity: parseInt(result.quantity)+1 },
+          { where: {username, isbn} }
+        );
+      } else {
+        await cart.create({isbn: isbn, username: username, quantity: 1});
+      }
       res.status(201);
       res.send("Item Added to Cart");
     } catch(err) {
@@ -487,13 +494,21 @@ function removeFromCart(req, res){
   (async() => {
     try {
       console.log(req.body.isbn)
-
       let username = req.session.user.username;
       let isbn = req.body.isbn;
-      await cart.destroy({ where : {username, isbn} });
+
+      let result = await cart.findOne({where : {username, isbn}});
+      if (result.quantity>1) {
+        await cart.update(
+          { quantity: result.quantity-1 },
+          { where: {username, isbn} }
+        );
+      } else {
+        await cart.destroy({ where : {username, isbn} });
+      }
+
       res.status(201);
-      
-      res.send("Item Removed From Cart");
+      res.send("/carts");
     } catch(err) {
       console.log(err)
       res.status(404);
@@ -532,7 +547,8 @@ function completeOrder(req, res){
       let purchasedBooks = await cart.findAll({where: {username}});
       for(boughtBook of purchasedBooks){
         let isbn = boughtBook.isbn;
-        await purchases.create({isbn, username, date: purchaseDate, orderNo: newOrderNum});
+        let quantity = boughtBook.quantity;
+        await purchases.create({isbn, username, date: purchaseDate, orderNo: newOrderNum, quantity});
         await cart.destroy({where: {username, isbn}});
       }
       res.status(200);

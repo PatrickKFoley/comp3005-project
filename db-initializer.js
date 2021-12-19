@@ -64,8 +64,8 @@ database.authenticate().then(() => {
             await publisherPhoneNumber.create({ name : "Penguin", phoneNum : "5194004204"});
             await publisherPhoneNumber.create({ name : "Imperial", phoneNum : "7894561231"});
 
-            await purchases.create({ isbn : "101118794", username : "user", date : Date(), orderNo : "0001"});
-            await purchases.create({ isbn : "998784564", username : "user", date : Date(), orderNo : "0001"});
+            await purchases.create({ isbn : "101118794", username : "user", date : Date(), orderNo : "0001", quantity: 2});
+            await purchases.create({ isbn : "998784564", username : "user", date : Date(), orderNo : "0001", quantity: 1});
         }
         catch(err){
             console.log(err);

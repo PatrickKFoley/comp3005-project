@@ -9,6 +9,10 @@ module.exports = (sequelize, Datatypes) => {
             type: Datatypes.STRING,
             primaryKey: true,
             allowNull: false
+        },
+        quantity: {
+            type: Datatypes.BIGINT,
+            allowNull: false
         }
     });
 };

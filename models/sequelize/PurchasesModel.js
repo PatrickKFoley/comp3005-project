@@ -10,12 +10,17 @@ module.exports = (sequelize, Datatypes) => {
             primaryKey: true,
             allowNull: false
         },
+        orderNo: {
+            type: Datatypes.STRING,
+            primaryKey: true,
+            allowNull: false
+        },
         date: {
             type: Datatypes.DATE,
             allowNull: false
         },
-        orderNo: {
-            type: Datatypes.STRING,
+        quantity: {
+            type: Datatypes.BIGINT,
             allowNull: false
         }
     });

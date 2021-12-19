@@ -12,19 +12,17 @@ function removeFromCart(clicked_id){
 
     req.onreadystatechange = function() {
         if(this.readyState == 4 && this.status == 201){
-            location.href = document.getElementById("cart");
-            results.innerHTML = this.responseText;
+            location.href = this.responseText;
         }
         else if(this.readyState == 4 && this.status == 404 || this.status == 400){
             alert(this.responseText);
         }
     }
 
-    req.open("PUT", "http://localhost:3000/carts/" + isbn + "?num=1");
+    req.open("PUT", "http://localhost:3000/carts/" + isbn);
     req.setRequestHeader("Content-Type", "application/json");
     let data = JSON.stringify(book);
     req.send(data);
-
 }
 
 //Sends request to add book to cart
