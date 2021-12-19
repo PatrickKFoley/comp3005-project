@@ -26,15 +26,15 @@ const user = userModel(database, Sequelize);
 
 //many to many relationship between Publishers and Books
 publisher.belongsToMany(book, {foreignKey: "name", through: publishes});
-book.belongsToMany(publisher, {foreignKey: "title", through: publishes});
+book.belongsToMany(publisher, {foreignKey: "isbn", through: publishes});
 
 //many to many relationship between User and Book, Purchases
-user.belongsToMany(book, {through: purchases});
-book.belongsToMany(user, {through: purchases});
+user.belongsToMany(book, {foreignKey: "username", through: purchases});
+book.belongsToMany(user, {foreignKey: "isbn", through: purchases});
 
 //many to many relationship between User and Book, Cart
-user.belongsToMany(book, {foreignKey: user.userID, through: cart});
-book.belongsToMany(user, {foreignKey: book.ISBN, through: cart});
+user.belongsToMany(book, {foreignKey: "username", through: cart});
+book.belongsToMany(user, {foreignKey: "isbn", through: cart});
 
 const app = express();
 const port = 3000;

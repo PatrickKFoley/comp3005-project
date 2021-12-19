@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => { return sequelize.define('publisherPhoneNum', {
+module.exports = (sequelize, DataTypes) => { return sequelize.define('publisherphonenum', {
     name: {
         type: DataTypes.STRING,
         primaryKey: true,
