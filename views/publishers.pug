@@ -12,9 +12,9 @@ html
         br
         br
         if query==""
-            |Orders that match search:
+            |Publishers that match search:
         else
-            |Orders that match #{query} 
-        #orders
+            |Publishers that match #{query} 
+        #names
             include ./partials/publisher_partial.pug
         script(src="/js/query.js")

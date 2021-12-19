@@ -89,7 +89,6 @@ function createUser(){
 		}
         else if(this.readyState == 4 && this.status == 400){
             alert(this.responseText);
-            location.href = this.responseText;
         }
 	}
     
