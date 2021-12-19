@@ -25,16 +25,16 @@ const purchases = purchasesModel(database, Sequelize);
 const user = userModel(database, Sequelize);
 
 //many to many relationship between Publishers and Books
-publisher.belongsToMany(book, {foreignKey: "name", through: publishes});
-book.belongsToMany(publisher, {foreignKey: "title", through: publishes});
+publisher.belongsToMany(book, {foreignKey: "name", through: {model: purchases, unique: false}});
+book.belongsToMany(publisher, {foreignKey: "isbn", through: {model: publishes, unique: false}});
 
 //many to many relationship between User and Book, Purchases
-user.belongsToMany(book, {foreignKey: "username", through: purchases});
-book.belongsToMany(user, {foreignKey: "isbn", through: purchases});
+user.belongsToMany(book, {foreignKey: "username", through: {model: purchases, unique: false}});
+book.belongsToMany(user, {foreignKey: "isbn", through: {model: purchases, unique: false}});
 
 //many to many relationship between User and Book, Cart
-user.belongsToMany(book, {foreignKey: "username", through: cart});
-book.belongsToMany(user, {foreignKey: "isbn", through: cart});
+user.belongsToMany(book, {foreignKey: "username", through: {model: cart, unique: false}});
+book.belongsToMany(user, {foreignKey: "isbn", through: {model: cart, unique: false}});
 
 const app = express();
 const port = 3000;
@@ -61,7 +61,7 @@ app.post("/carts", addToCart);
 app.post('/books', addBook);
 app.post('/login', login);
 app.post('/register', registerUser);
-app.post('/order', completeOrder);
+app.post('/orders', completeOrder);
 app.post('/publishers', addPublisher);
 
 app.get('/', getHomePage)
@@ -79,11 +79,6 @@ app.get('/publishers', getPublishers);
 app.get('/addpublisher', getAddPublisherPage);
 app.get('/publishers/:name', getPublisher);
 app.get('/sales', getSales);
-
-//publisher.sync({alter: true});
-//publisherPhoneNumber.sync({alter: true});
-publishes.sync({force: true});
-//cart.sync({force: true});
 
 //makes sure a user is signed in
 function auth(req, res, next){
@@ -264,15 +259,15 @@ function addBook(req, res){
             return;
           }
 
-          //creat the entry in the publishes table
-          const newPublishes = await publishes.create({isbn: req.body.isbn, name: req.body.publisher})
-
           //create book
           const newBook = await book.create({isbn: req.body.isbn, title: req.body.title, author: req.body.author, numPages: req.body.numPages, stock: req.body.stock, price: req.body.price});
-          var isbn = newBook.dataValues.isbn
+          var isbn = newBook.dataValues.isbn;
+
+          //create the entry in the publishes table
+          const newPublishes = await publishes.create({isbn: req.body.isbn, name: req.body.publisher});
 
           //create genres in the bookGenres relationship
-          console.log(req.body.genres)
+          console.log(req.body.genres);
           genres = req.body.genres;
           genres = genres.split(" ").join("").split(",")
           for (var i = 0; i < genres.length; i++){
@@ -296,12 +291,12 @@ function addBook(req, res){
 function getCart(req, res){
   (async () => {
     try {
-      let isbns = await database.query("SELECT isbn FROM carts WHERE username = '" + req.session.user.username + "'", {type: Sequelize.SELECT});
-
-      const books = []
+      let isbns = await database.query("SELECT isbn, quantity FROM carts WHERE username = '" + req.session.user.username + "'", {type: Sequelize.SELECT});
+      const books = [];
       for (var i = 0; i < isbns[0].length; i++){
-        const book = await database.query("SELECT title, isbn FROM books WHERE isbn = '" + isbns[0][i].isbn + "'", {type: Sequelize.SELECT});
-          books.push(book[0][0])
+          const book = await database.query("SELECT title, isbn FROM books WHERE isbn = '" + isbns[0][i].isbn + "'", {type: Sequelize.SELECT});
+          books.push(book[0][0]);
+          books[i].quantity = isbns[0][i].quantity;
       }
       //let books = await database.query("Select * From Books Where isbn=(Select isbn From Cart Where username='"+req.session.user+"');");
       res.status(200);
@@ -329,20 +324,21 @@ function getOrdersPage(req, res){
       let orderNo = req.query.orderNo;
       if (orderNo == undefined) {
         //send everything
-        query = 'SELECT OrderNo FROM purchases';
+        query = 'SELECT distinct(order_number) FROM purchases';
       } else {
         //find what they actually want and send it
-        query = "SELECT OrderNo FROM purchases WHERE OrderNo LIKE '%" + orderNo + "%'";
+        query = "SELECT order_number FROM purchases WHERE order_number LIKE '%" + orderNo + "%'";
       }
 
-      const orders = await database.query(query, {type: Sequelize.SELECT})
+      const ord = await database.query(query, {type: Sequelize.SELECT});
+      let orders = ord[0];
 
       res.status(200);
       if(req.query.num=="1"){
-        res.send(pug.renderFile("./views/partials/orders_partial.pug", {user: req.session.user, loggedin: req.session.loggedin, orders: orders[0]}));
+        res.send(pug.renderFile("./views/partials/orders_partial.pug", {user: req.session.user, loggedin: req.session.loggedin, orders}));
       }
       else{
-        res.send(pug.renderFile("./views/orders.pug", {user: req.session.user, loggedin: req.session.loggedin, orders: orders[0]}));
+        res.send(pug.renderFile("./views/orders.pug", {user: req.session.user, loggedin: req.session.loggedin, orders}));
       }
 
     } 
@@ -358,9 +354,19 @@ function getOrdersPage(req, res){
 function getOrder(req, res){
   (async() => {
     try {
-      const order = await database.query("SELECT * FROM purchases WHERE OrderNum = '" + req.params.orderNo + "'", {type: Sequelize.SELECT});
+      const ord = await purchases.findAll({where: {order_number: req.params.orderNum}});
+      let today = new Date(ord[0].date);
+      console.log(today);
+      let newDate = new Date(today.setDate(today.getDate() + 2));
+      //newDate.setDate(newDate.getDate() + 2);
+      let order = {
+        order_no : ord[0].order_number,
+        date: ord[0].date,
+        delivery_date: newDate,
+        delivered: Date() > newDate
+      };
       res.status(200);
-      res.send(pug.renderFile("./views/order.pug", {order: order[0][0], user: req.session}));
+      res.send(pug.renderFile("./views/order.pug", {user: req.session.user, loggedin: req.session.loggedin, order}));
     } catch(err) {
       console.log(err)
       res.status(404);
@@ -473,6 +479,14 @@ function addToCart(req, res){
       let username = req.session.user.username;
       let isbn = req.body.isbn;
       let result = await cart.findOne({where : {username, isbn}});
+      let bookResult = await book.findOne({where : {isbn}});
+      //Won't add if out of stock
+      if(bookResult.stock<=0){
+        res.status(404);
+        res.send("Sorry, no more stock.");
+        return;
+      }
+      //Adds to cart
       if (result) {
         await cart.update(
           { quantity: parseInt(result.quantity)+1 },
@@ -481,6 +495,11 @@ function addToCart(req, res){
       } else {
         await cart.create({isbn: isbn, username: username, quantity: 1});
       }
+      //Updates book stock
+      await book.update(
+        { stock: bookResult.stock-1 },
+        { where: {isbn} }
+      );
       res.status(201);
       res.send("Item Added to Cart");
     } catch(err) {
@@ -499,6 +518,7 @@ function removeFromCart(req, res){
       let username = req.session.user.username;
       let isbn = req.body.isbn;
 
+      //Update cart quantity
       let result = await cart.findOne({where : {username, isbn}});
       if (result.quantity>1) {
         await cart.update(
@@ -508,6 +528,12 @@ function removeFromCart(req, res){
       } else {
         await cart.destroy({ where : {username, isbn} });
       }
+      //Update book stock
+      result = await book.findOne({where : {isbn}});
+      await book.update(
+        { stock: result.stock+1 },
+        { where: {isbn} }
+      );
 
       res.status(201);
       res.send("/carts");
@@ -523,11 +549,12 @@ function removeFromCart(req, res){
 function removeFromStore(req, res){
   (async () => {
     try {
-      await book.destroy({where : {isbn : req.session.isbn}});
+      await book.destroy({where : {isbn : req.params.isbn}});
       res.status(201);
-      res.send("/");
+      res.send("/books");
     }
-    catch{
+    catch(err){
+      console.log(err);
       res.status(404);
       res.send("Something went wrong");
     }
@@ -542,22 +569,34 @@ function completeOrder(req, res){
       //CREATE DATE
       //REMOVE BOOKS FROM CART
       //CREATE NEW ENTRY FOR EACH BOOK IN PURCHASES
-      const uniquePurchases = (await database.query("SELECT count(*) FROM (SELECT distinct(isbn) FROM purchases) AS temp;", {type: Sequelize.SELECT}))[0][0];
-      let newOrderNum = uniquePurchases + 1;
+      const uniquePurchases = (await database.query("SELECT count(*) FROM (SELECT distinct(order_number) FROM purchases) AS temp;", {type: Sequelize.SELECT}))[0][0].count;
+      let newOrderNum = parseInt(uniquePurchases) + 1;
       let purchaseDate = new Date();
       let username = req.session.user.username;
       let purchasedBooks = await cart.findAll({where: {username}});
+      console.log("Num: " + newOrderNum);
+      console.log("username: " + username);
       for(boughtBook of purchasedBooks){
         let isbn = boughtBook.isbn;
         let quantity = boughtBook.quantity;
-        await purchases.create({isbn, username, date: purchaseDate, orderNo: newOrderNum, quantity});
+        console.log("isbn: " + isbn);
+        await purchases.create({isbn, username, date: purchaseDate, order_number: newOrderNum, quantity});
         await cart.destroy({where: {username, isbn}});
+        //Get restock from publisher if none left
+        let result = await book.findOne({where : {isbn}});
+        if(result.stock<=0){
+          await book.update(
+            { stock: 20},
+            { where: {isbn} }
+          );
+        }
       }
       res.status(200);
       res.send("/orders/" + newOrderNum);
 
     }
-    catch{
+    catch(err){
+      console.log(err);
       res.status(400);
       res.send("Sorry there was a problem on our end");
     }
@@ -565,15 +604,3 @@ function completeOrder(req, res){
 };
 
 app.listen(port, () => console.log(`app listening on port ${port}`)) 
-
-//HELPER FUNCTIONS
-
-//CODE TAKEN FROM STACK OVERFLOW. I DO NOT THINK THIS
-//IS PLAGUERISM AS ITS A SIMPLE CONVERSION FUNCTION
-//WHICH DOES NOT RELATE TO MY UNDERSTANDING OF DATABASES
-//https://stackoverflow.com/questions/563406/add-days-to-javascript-date
-Date.prototype.addDays = function(days){
-  let date = new Date(this.valueOf);
-  date.setDate(date.getDate() + days);
-  return date;
-};

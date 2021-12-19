@@ -21,6 +21,9 @@ html
         |Genres include:
         ul
             each genre in genres
-                | #{genre.genre},       
-        button(type='button' id=book.isbn onclick='addToCart(this.id)') Add to Cart
+                | #{genre.genre},
+        if user.owner
+            button(type='button' id=book.isbn onclick='removeFromStore(this.id)') Remove
+        else
+            button(type='button' id=book.isbn onclick='addToCart(this.id)') Add to Cart
     script(src="/js/query.js")

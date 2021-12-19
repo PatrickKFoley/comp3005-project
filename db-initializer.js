@@ -21,16 +21,16 @@ const purchases = purchasesModel(database, Sequelize);
 const user = userModel(database, Sequelize);
 
 //many to many relationship between Publishers and Books
-publisher.belongsToMany(book, {foreignKey: "name", through: publishes});
-book.belongsToMany(publisher, {foreignKey: "isbn", through: publishes});
+publisher.belongsToMany(book, {foreignKey: "name", through: {model: purchases, unique: false}});
+book.belongsToMany(publisher, {foreignKey: "isbn", through: {model: publishes, unique: false}});
 
 //many to many relationship between User and Book, Purchases
-user.belongsToMany(book, {foreignKey: "username", through: purchases});
-book.belongsToMany(user, {foreignKey: "isbn", through: purchases});
+user.belongsToMany(book, {foreignKey: "username", through: {model: purchases, unique: false}});
+book.belongsToMany(user, {foreignKey: "isbn", through: {model: purchases, unique: false}});
 
 //many to many relationship between User and Book, Cart
-user.belongsToMany(book, {foreignKey: "username", through: cart});
-book.belongsToMany(user, {foreignKey: "isbn", through: cart});
+user.belongsToMany(book, {foreignKey: "username", through: {model: cart, unique: false}});
+book.belongsToMany(user, {foreignKey: "isbn", through: {model: cart, unique: false}});
 
 database.authenticate().then(() => {
     console.log('Connection has been established successfully.');
@@ -64,8 +64,8 @@ database.authenticate().then(() => {
             await publisherPhoneNumber.create({ name : "Penguin", phoneNum : "5194004204"});
             await publisherPhoneNumber.create({ name : "Imperial", phoneNum : "7894561231"});
 
-            await purchases.create({ isbn : "101118794", username : "user", date : Date(), orderNo : "0001", quantity: 2});
-            await purchases.create({ isbn : "998784564", username : "user", date : Date(), orderNo : "0001", quantity: 1});
+            await purchases.create({ isbn : "101118794", username : "user", date : Date(), order_number : 1, quantity: 2});
+            await purchases.create({ isbn : "998784564", username : "user", date : Date(), order_number : 1, quantity: 1});
         }
         catch(err){
             console.log(err);

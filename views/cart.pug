@@ -13,4 +13,8 @@ html
         else
         #cart
             include ./partials/cart_partial.pug
+        br
+        if books.length!=0
+            form(action='/checkout')
+                input(type='submit' value='Complete Order')
         script(src="/js/query.js")

@@ -10,8 +10,8 @@ module.exports = (sequelize, Datatypes) => {
             primaryKey: true,
             allowNull: false
         },
-        orderNo: {
-            type: Datatypes.STRING,
+        order_number: {
+            type: Datatypes.BIGINT,
             primaryKey: true,
             allowNull: false
         },

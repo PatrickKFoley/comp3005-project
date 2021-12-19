@@ -1,8 +1,8 @@
 if books != null
     each book of books 
-        a(href="/books/"+book.isbn) #{book.title}
         if user.owner
-            button#book.isbn(type='button' onclick='removeFromStore(this.id)') Remove
+            button(type='button' id=book.isbn onclick='removeFromStore(this.id)') Remove
         else
             button(type='button' id=book.isbn onclick='addToCart(this.id)') Add To Cart
+        a(href="/books/"+book.isbn) #{book.title}
         br

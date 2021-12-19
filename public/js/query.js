@@ -185,7 +185,7 @@ function completeOrder(){
     let empty = {};
     //Send data to server
     let req = new XMLHttpRequest();
-
+    console.log("Here");
 	req.onreadystatechange = function() {
 		if(this.readyState == 4 && this.status == 200){
 			alert("Your order has been placed!");
@@ -213,7 +213,7 @@ function removeFromStore(clicked_id){
                 alert("Your order has been placed!");
                 location.href = this.responseText;
             }
-            else if(this.readyState == 4 && this.status == 400){
+            else if(this.readyState == 4 && this.status == 404){
                 alert(this.responseText);
             }
         }

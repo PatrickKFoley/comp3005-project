@@ -1,5 +1,6 @@
 each book of books 
     script(src="/js/query.js")
+    |#{book.quantity} x 
     a(href="/books/"+book.isbn) #{book.title}
     button(type='button' id=book.isbn onclick='removeFromCart(this.id)') Remove
     br
