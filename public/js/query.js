@@ -210,7 +210,7 @@ function removeFromStore(clicked_id){
     
         req.onreadystatechange = function() {
             if(this.readyState == 4 && this.status == 201){
-                alert("Your order has been placed!");
+                alert("This book has been removed!");
                 location.href = this.responseText;
             }
             else if(this.readyState == 4 && this.status == 404){

@@ -7,8 +7,17 @@ html
         br
         |Order No.: #{order.order_no}
         br
+        |Shipped to user: #{user.username}
+        br
         |Date Ordered: #{order.date}
         br
         |Delivery Date: #{order.delivery_date}
         br
         |Delivered: #{order.delivered}
+        br
+        br
+        |Order contains:
+        br
+        each book in books
+            a(href="/books/"+book.isbn) #{book.title}
+            br

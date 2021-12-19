@@ -355,8 +355,15 @@ function getOrder(req, res){
   (async() => {
     try {
       const ord = await purchases.findAll({where: {order_number: req.params.orderNum}});
+      const isbns = await database.query("SELECT isbn FROM purchases WHERE order_number = " + req.params.orderNum, {type: Sequelize.SELECT});
+
+      const books = []
+      for (var i = 0; i < isbns[0].length; i++){
+        var book = await database.query("SELECT title, isbn FROM books WHERE isbn = " + isbns[0][i].isbn, {type: Sequelize.SELECT});
+        books.push(book[0][0]);
+      }
+
       let today = new Date(ord[0].date);
-      console.log(today);
       let newDate = new Date(today.setDate(today.getDate() + 2));
       //newDate.setDate(newDate.getDate() + 2);
       let order = {
@@ -365,8 +372,9 @@ function getOrder(req, res){
         delivery_date: newDate,
         delivered: Date() > newDate
       };
+      
       res.status(200);
-      res.send(pug.renderFile("./views/order.pug", {user: req.session.user, loggedin: req.session.loggedin, order}));
+      res.send(pug.renderFile("./views/order.pug", {user: req.session.user, loggedin: req.session.loggedin, order, books: books}));
     } catch(err) {
       console.log(err)
       res.status(404);
@@ -550,6 +558,7 @@ function removeFromStore(req, res){
   (async () => {
     try {
       await book.destroy({where : {isbn : req.params.isbn}});
+      await bookGenre.destroy({where : {isbn : req.params.isbn}});
       res.status(201);
       res.send("/books");
     }
