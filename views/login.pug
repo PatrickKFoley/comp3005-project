@@ -9,20 +9,19 @@ html
         br
         br
 
-        if (user == undefined)
+        if (user===undefined)
             h1(style="text-align:center") Welcome! Please sign in.
-
-            form(action="/login" method="post")
-                label(for="username") Enter your username
-                input(type="text" name="username" id="username")
-                br
-                br
-                label(for="password") Enter your password
-                input(type="password" name="password" id="password")
-                br
-                br
-                input(type="submit" value="Login")
-
+            br
+            br
+            label(for="username") Username: 
+            input(type="textbox" id="username" size="50")
+            br
+            br
+            label(for="password") Password: 
+            input(type="password" id="password" size="50")
+            br
+            br
+            button(type='button' onclick='login()') Log In
         else
             h1(style="text-align:center;") Welcome! Currently signed in as: #{user.username}
 

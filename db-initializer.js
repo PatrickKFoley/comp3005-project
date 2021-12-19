@@ -21,16 +21,16 @@ const purchases = purchasesModel(database, Sequelize);
 const user = userModel(database, Sequelize);
 
 //many to many relationship between Publishers and Books
-publisher.belongsToMany(book, {through: publishes});
-book.belongsToMany(publisher, {through: publishes});
+publisher.belongsToMany(book, {foreignKey: "name", through: publishes});
+book.belongsToMany(publisher, {foreignKey: "isbn", through: publishes});
 
 //many to many relationship between User and Book, Purchases
-user.belongsToMany(book, {through: purchases});
-book.belongsToMany(user, {through: purchases});
+user.belongsToMany(book, {foreignKey: "username", through: purchases});
+book.belongsToMany(user, {foreignKey: "isbn", through: purchases});
 
 //many to many relationship between User and Book, Cart
-user.belongsToMany(book, {foreignKey: user.userID, through: cart});
-book.belongsToMany(user, {foreignKey: book.ISBN, through: cart});
+user.belongsToMany(book, {foreignKey: "username", through: cart});
+book.belongsToMany(user, {foreignKey: "isbn", through: cart});
 
 database.authenticate().then(() => {
     console.log('Connection has been established successfully.');
@@ -64,8 +64,8 @@ database.authenticate().then(() => {
             await publisherPhoneNumber.create({ name : "Penguin", phoneNum : "5194004204"});
             await publisherPhoneNumber.create({ name : "Imperial", phoneNum : "7894561231"});
 
-            await purchases.create({ isbn : "101118794", username : "user", date : Date(), orderNo : 0001});
-            await purchases.create({ isbn : "998784564", username : "user", date : Date(), orderNo : 0001});
+            await purchases.create({ isbn : "101118794", username : "user", date : Date(), orderNo : "0001"});
+            await purchases.create({ isbn : "998784564", username : "user", date : Date(), orderNo : "0001"});
         }
         catch(err){
             console.log(err);

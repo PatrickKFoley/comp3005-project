@@ -189,7 +189,7 @@ function completeOrder(){
     let req = new XMLHttpRequest();
 
 	req.onreadystatechange = function() {
-		if(this.readyState == 4 && this.status == 201){
+		if(this.readyState == 4 && this.status == 200){
 			alert("Your order has been placed!");
             location.href = this.responseText;
 		}

@@ -29,8 +29,8 @@ publisher.belongsToMany(book, {foreignKey: "name", through: publishes});
 book.belongsToMany(publisher, {foreignKey: "name", through: publishes});
 
 //many to many relationship between User and Book, Purchases
-user.belongsToMany(book, {through: purchases});
-book.belongsToMany(user, {through: purchases});
+user.belongsToMany(book, {foreignKey: "username", through: purchases});
+book.belongsToMany(user, {foreignKey: "isbn", through: purchases});
 
 //many to many relationship between User and Book, Cart
 user.belongsToMany(book, {through: cart});
@@ -116,14 +116,16 @@ function getLoginPage(req, res){
     return;
   }
   res.status(200);
+  console.log(req.session.user);
   res.send(pug.renderFile("./views/login.pug", {user: req.session.user, loggedin: req.session.loggedin}));
 };
 
 //Logs user out
 function logout(req, res){
 	if(req.session.loggedin){
+    req.session.user.owner = undefined;
     req.session.loggedin = false;
-    req.session.username = undefined;
+    req.session.user.username = undefined;
 		res.status(200)
     res.send(pug.renderFile("./views/login.pug"));
 	}else{
@@ -142,12 +144,17 @@ function registerUser(req, res){
   (async () => {
       try {
           const newUser = await user.create({username: req.body.username, email: req.body.email, address: req.body.address, name: req.body.name, password: req.body.password, owner: req.body.owner});
-          console.log(newUser.email.slice(-10))
-          res.status(200);
-          res.send(pug.renderFile("./views/login.pug", {user: req.session.user, loggedin: req.session.loggedin}));
+          console.log(newUser.email.slice(-10));
+          req.session.user = {};
+          req.session.user.username = req.body.username;
+          req.session.user.owner = req.body.owner;
+          req.session.loggedin = true;
+          res.status(201);
+          res.send("/");
       } catch(err) {
-          console.log(err)
-          res.json({message: "Something went wrong - User probably already in db"})
+          console.log(err);
+          res.status(400);
+          res.send("Something went wrong - User probably already in db");
       }
   })();
 }
@@ -158,7 +165,7 @@ function login(req, res){
       try {
           if (req.session.loggedin){
               req.session.loggedin = false;
-              req.session.user = null;
+              req.session.user = {};
           }
           const properUser = await database.query("SELECT * FROM users WHERE username = '" + req.body.username + "'", {model: user});
           console.log(properUser[0].dataValues);
@@ -175,7 +182,10 @@ function login(req, res){
           else{
             res.status(404);
             res.send("Password and username do not exist");
+            return;
           }
+          res.status(200);
+          res.send("/");
       } catch(err) {
           console.log(err)
           res.json({message: "Something went wrong"})
@@ -220,7 +230,7 @@ function getBook(req, res){
   (async() => {
     try {
       const book = await database.query("SELECT * FROM books WHERE isbn = '" + req.params.isbn + "'", {type: Sequelize.SELECT})
-      const genres = await database.query('SELECT * FROM "bookgenres" WHERE isbn = ' + req.params.isbn, {type: Sequelize.SELECT})
+      const genres = await database.query('SELECT * FROM bookgenres WHERE isbn = ' + req.params.isbn, {type: Sequelize.SELECT})
       const publisher = await database.query('SELECT name FROM publishes WHERE isbn = ' + req.params.isbn, {type: Sequelize.SELECT})
 
       console.log(publisher[0]);
@@ -498,7 +508,7 @@ function removeFromStore(req, res){
     try {
       await book.destroy({where : {isbn : req.session.isbn}});
       res.status(201);
-      res.send("http://localhost:3000/");
+      res.send("/");
     }
     catch{
       res.status(404);
@@ -507,6 +517,7 @@ function removeFromStore(req, res){
   })();
 };
 
+//Checkout for the user
 function completeOrder(req, res){
   (async () => {
     try {
@@ -514,9 +525,23 @@ function completeOrder(req, res){
       //CREATE DATE
       //REMOVE BOOKS FROM CART
       //CREATE NEW ENTRY FOR EACH BOOK IN PURCHASES
+      const uniquePurchases = (await database.query("SELECT count(*) FROM (SELECT distinct(isbn) FROM purchases) AS temp;", {type: Sequelize.SELECT}))[0][0];
+      let newOrderNum = uniquePurchases + 1;
+      let purchaseDate = new Date();
+      let username = req.session.user.username;
+      let purchasedBooks = await cart.findAll({where: {username}});
+      for(boughtBook of purchasedBooks){
+        let isbn = boughtBook.isbn;
+        await purchases.create({isbn, username, date: purchaseDate, orderNo: newOrderNum});
+        await cart.destroy({where: {username, isbn}});
+      }
+      res.status(200);
+      res.send("/orders/" + newOrderNum);
+
     }
     catch{
-
+      res.status(400);
+      res.send("Sorry there was a problem on our end");
     }
   })();
 };
