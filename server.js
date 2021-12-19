@@ -33,8 +33,8 @@ user.belongsToMany(book, {foreignKey: "username", through: purchases});
 book.belongsToMany(user, {foreignKey: "isbn", through: purchases});
 
 //many to many relationship between User and Book, Cart
-user.belongsToMany(book, {through: cart});
-book.belongsToMany(user, {through: cart});
+user.belongsToMany(book, {foreignKey: "username", through: cart});
+book.belongsToMany(user, {foreignKey: "isbn",through: cart});
 
 const app = express();
 const port = 3000;
@@ -82,7 +82,7 @@ app.get('/sales', getSales);
 
 //publisher.sync({alter: true});
 //publisherPhoneNumber.sync({alter: true});
-//publishes.sync({force: true});
+publishes.sync({force: true});
 //cart.sync({force: true});
 
 //makes sure a user is signed in
@@ -177,15 +177,13 @@ function login(req, res){
               req.session.user.username = properUser[0].dataValues.username;
 
               res.status(200);
-              res.send(pug.renderFile("./views/home.pug", {homePageTitle : 'Look Inna Book', user: req.session.user, loggedin: req.session.loggedin}));
+              res.send("/");
           }
           else{
             res.status(404);
             res.send("Password and username do not exist");
             return;
           }
-          res.status(200);
-          res.send("/");
       } catch(err) {
           console.log(err)
           res.json({message: "Something went wrong"})
@@ -409,7 +407,7 @@ function getPublisher(req, res){
     try {
       const publisher = await database.query("SELECT * FROM publishers WHERE name = '" + req.params.name + "'", {type: Sequelize.SELECT});
       const publishes = await database.query("SELECT books.isbn, name, title FROM publishes, books WHERE publishes.isbn = books.isbn AND name = '" + req.params.name + "'", {type: Sequelize.SELECT});
-      const phoneNums = await database.query("SELECT \"phoneNum\" FROM \"publisherPhoneNums\" WHERE name = '" + req.params.name + "'", {type: Sequelize.SELECT});
+      const phoneNums = await database.query("SELECT \"phoneNum\" FROM publisherphonenums WHERE name = '" + req.params.name + "'", {type: Sequelize.SELECT});
 
       console.log(phoneNums[0])
 
@@ -447,12 +445,14 @@ function addPublisher(req, res){
 
         phoneNums = req.body.phoneNum;
         phoneNums = phoneNums.split(" ").join("").split(",")
+        console.log(phoneNums)
     
         for (var i = 0; i < phoneNums.length; i++){
           try{
             await publisherPhoneNumber.create({name: name, phoneNum: phoneNums[i]})
           }
           catch(err){
+            console.log(err)
             console.log("same phone number added twice - skipping second")
           }
         }
@@ -491,9 +491,9 @@ function removeFromCart(req, res){
       let username = req.session.user.username;
       let isbn = req.body.isbn;
       await cart.destroy({ where : {username, isbn} });
-      res.status(201);
       
-      res.send("Item Removed From Cart");
+      res.status(201);
+      res.send();
     } catch(err) {
       console.log(err)
       res.status(404);
