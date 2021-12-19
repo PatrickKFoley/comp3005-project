@@ -24,6 +24,10 @@ module.exports = (sequelize, Datatypes) => {
         price: {
             type: Datatypes.DOUBLE,
             allowNull: false
+        },
+        royalty: {
+            type: Datatypes.DOUBLE,
+            allowNull: false
         }
     });
 }

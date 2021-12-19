@@ -49,8 +49,8 @@ database.authenticate().then(() => {
             await user.create({ username : "owner", password : "password", owner : true, name : "Me", email : "owner@owner.com", address : "1290 POW"});
             await user.create({ username : "user", password : "password", owner : false,  name : "You", email : "user@user.com", address : "Home"});
 
-            await book.create({ isbn : "101118794", title : "Ender Game", author : "Orson Scott Card", numPages : 458, stock : 10, price : "10.99"});
-            await book.create({ isbn : "998784564", title : "Ice", author : "Anna Kavan", numPages : 185,  stock : 3, price : "15.99"});
+            await book.create({ isbn : "101118794", title : "Ender Game", author : "Orson Scott Card", numPages : 458, stock : 10, price : "10.99", royalty: 50});
+            await book.create({ isbn : "998784564", title : "Ice", author : "Anna Kavan", numPages : 185,  stock : 3, price : "15.99", royalty: 12});
 
             await bookGenre.create({ isbn : "101118794", genre : "Sci-Fi"});
             await bookGenre.create({ isbn : "998784564", genre : "Mystery"});
