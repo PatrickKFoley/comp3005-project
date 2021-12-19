@@ -98,7 +98,7 @@ function addBook(){
         alert("price is invalid. Needs to be a number");
         return;
     }
-    if(!validInput(Publisher)){
+    if(!validInput(publisher)){
         alert("Publisher is invalid. Needs to be >2 characters");
     }
     if(!validInput(genres)){

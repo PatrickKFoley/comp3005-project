@@ -227,9 +227,9 @@ function getBook(req, res){
       const genres = await database.query('SELECT * FROM bookgenres WHERE isbn = ' + req.params.isbn, {type: Sequelize.SELECT})
       const publisher = await database.query('SELECT name FROM publishes WHERE isbn = ' + req.params.isbn, {type: Sequelize.SELECT})
 
-      console.log(publisher[0]);
+      console.log(publisher[0])
       res.status(200);
-      res.send(pug.renderFile("./views/book.pug", {book: book[0][0], publisher: publisher[0][0], user: req.session.user, loggedin: req.session.loggedin, genres: genres[0]}));
+      res.send(pug.renderFile("./views/book.pug", {book: book[0][0], publishers: publisher[0], user: req.session.user, loggedin: req.session.loggedin, genres: genres[0]}));
     } catch(err) {
       console.log(err)
       res.status(404);
@@ -248,23 +248,32 @@ function getAddBookPage(req, res){
 function addBook(req, res){
   (async () => {
       try {
-          //ensure that the publisher exists
-          console.log(req.body)
-
-          const publisher = await database.query("SELECT * FROM publishers WHERE name = '" + req.body.publisher + "'", {type: Sequelize.SELECT});
-          if (publisher[0][0] == undefined){
-            console.log("publisher not found")
-            res.status(400);
-            res.send(responseText = "Sorry, please create publisher: " + req.body.publisher + " before adding this book")
-            return;
+          //ensure that each publisher exists
+          var publishers = req.body.publisher;
+          publishers = publishers.split(" ").join("").split(",")
+          console.log(publishers)
+          for (var i = 0; i < publishers.length; i++){
+              const publisher = await database.query("SELECT * FROM publishers WHERE name = '" + publishers[i] + "'", {type: Sequelize.SELECT});
+              if (publisher[0][0] == undefined){
+                console.log("publisher not found")
+                res.status(400);
+                res.send(responseText = "Sorry, please create publisher: " + publishers[i] + " before adding this book")
+                return;
+              }
           }
 
           //create book
           const newBook = await book.create({isbn: req.body.isbn, title: req.body.title, author: req.body.author, numPages: req.body.numPages, stock: req.body.stock, price: req.body.price, royalty: req.body.royalty});
           var isbn = newBook.dataValues.isbn;
 
-          //create the entry in the publishes table
-          const newPublishes = await publishes.create({isbn: req.body.isbn, name: req.body.publisher});
+          //all publishers exist, add book and publisher to publishes
+          for (var i = 0; i < publishers.length; i++){
+            try{
+              var newPublishes = await publishes.create({isbn: req.body.isbn, name: publishers[i]});
+            } catch(err){
+              console.log("Same publisher added twice - skipping second")
+            }
+          }
 
           //create genres in the bookGenres relationship
           console.log(req.body.genres);
@@ -373,7 +382,7 @@ function getOrder(req, res){
         delivery_date: newDate,
         delivered: Date() > newDate
       };
-      
+
       res.status(200);
       res.send(pug.renderFile("./views/order.pug", {user: req.session.user, loggedin: req.session.loggedin, order, books: books}));
     } catch(err) {
