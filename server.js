@@ -25,7 +25,7 @@ const purchases = purchasesModel(database, Sequelize);
 const user = userModel(database, Sequelize);
 
 //many to many relationship between Publishers and Books
-publisher.belongsToMany(book, {foreignKey: "name", through: {model: purchases, unique: false}});
+publisher.belongsToMany(book, {foreignKey: "name", through: {model: publishes, unique: false}});
 book.belongsToMany(publisher, {foreignKey: "isbn", through: {model: publishes, unique: false}});
 
 //many to many relationship between User and Book, Purchases
@@ -260,7 +260,7 @@ function addBook(req, res){
           }
 
           //create book
-          const newBook = await book.create({isbn: req.body.isbn, title: req.body.title, author: req.body.author, numPages: req.body.numPages, stock: req.body.stock, price: req.body.price});
+          const newBook = await book.create({isbn: req.body.isbn, title: req.body.title, author: req.body.author, numPages: req.body.numPages, stock: req.body.stock, price: req.body.price, royalty: req.body.royalty});
           var isbn = newBook.dataValues.isbn;
 
           //create the entry in the publishes table
@@ -282,7 +282,8 @@ function addBook(req, res){
           res.send();
       } catch(err) {
           console.log(err)
-          res.json({message: "Something went wrong - Book probably already in db"})
+          res.status(400);
+          res.send("Something went wrong - Book probably already in db or incorrect input");
       }
   })();
 }

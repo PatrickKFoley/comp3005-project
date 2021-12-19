@@ -62,6 +62,7 @@ function addBook(){
     let price = document.getElementById("price").value;
     let genres = document.getElementById("genres").value;
     let publisher = document.getElementById("publisher").value;
+    let royalty = document.getElementById("royalty").value;
 
     let book = {
         title,
@@ -71,8 +72,42 @@ function addBook(){
         stock,
         price,
         genres,
-        publisher
+        publisher,
+        royalty
     };
+
+    if(!validInput(title)){
+        alert("Title is invalid. Needs to be >2 characters");
+    }
+    if(!validInput(author)){
+        alert("Author is invalid. Needs to be >2 characters");
+    }
+    if(!validNumber(isbn)){
+        alert("isbn is invalid. Needs to be a number");
+        return;
+    }
+    if(!validNumber(numPages)){
+        alert("Page count is invalid. Needs to be a number");
+        return;
+    }
+    if(!validNumber(stock)){
+        alert("Stock is invalid. Needs to be a number");
+        return;
+    }
+    if(!validNumber(price)){
+        alert("price is invalid. Needs to be a number");
+        return;
+    }
+    if(!validInput(Publisher)){
+        alert("Publisher is invalid. Needs to be >2 characters");
+    }
+    if(!validInput(genres)){
+        alert("Genres is invalid. Needs to be >2 characters");
+    }
+    if(!validNumber(royalty)){
+        alert("royalty is invalid. Needs to be a number");
+        return;
+    }
 
     //Send data to server
     let req = new XMLHttpRequest();
@@ -222,4 +257,20 @@ function removeFromStore(clicked_id){
         req.setRequestHeader("Content-Type", "application/json");
         let data = JSON.stringify(empty);
         req.send(data);
+}
+
+//Returns whether the input string is valid
+function validInput(input){
+    if(input===""||input===undefined||input.length<3){
+        return false;
+    }
+    return true;
+}
+
+//Returns if valid number
+function validNumber(input){
+    if(parseFloat()==NaN){
+        return false;
+    }
+    return true;
 }
