@@ -165,8 +165,8 @@ function login(req, res){
           if (req.body.username == properUser[0].dataValues.username && req.body.password == properUser[0].dataValues.password){
               req.session.loggedin = true;
               req.session.user = {};
-              req.session.owner = properUser[0].dataValues.owner;
-              req.session.username = properUser[0].dataValues.username;
+              req.session.user.owner = properUser[0].dataValues.owner;
+              req.session.user.username = properUser[0].dataValues.username;
           }
           else{
             res.status(404);
