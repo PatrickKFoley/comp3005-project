@@ -82,7 +82,7 @@ app.get('/sales', getSales);
 
 //publisher.sync({alter: true});
 //publisherPhoneNumber.sync({alter: true});
-//publishes.sync({force: true});
+publishes.sync({force: true});
 //cart.sync({force: true});
 
 //makes sure a user is signed in
@@ -408,7 +408,7 @@ function getPublisher(req, res){
     try {
       const publisher = await database.query("SELECT * FROM publishers WHERE name = '" + req.params.name + "'", {type: Sequelize.SELECT});
       const publishes = await database.query("SELECT books.isbn, name, title FROM publishes, books WHERE publishes.isbn = books.isbn AND name = '" + req.params.name + "'", {type: Sequelize.SELECT});
-      const phoneNums = await database.query("SELECT \"phoneNum\" FROM \"publisherPhoneNums\" WHERE name = '" + req.params.name + "'", {type: Sequelize.SELECT});
+      const phoneNums = await database.query("SELECT \"phoneNum\" FROM publisherphonenums WHERE name = '" + req.params.name + "'", {type: Sequelize.SELECT});
 
       console.log(phoneNums[0])
 
@@ -446,12 +446,14 @@ function addPublisher(req, res){
 
         phoneNums = req.body.phoneNum;
         phoneNums = phoneNums.split(" ").join("").split(",")
+        console.log(phoneNums)
     
         for (var i = 0; i < phoneNums.length; i++){
           try{
             await publisherPhoneNumber.create({name: name, phoneNum: phoneNums[i]})
           }
           catch(err){
+            console.log(err)
             console.log("same phone number added twice - skipping second")
           }
         }
