@@ -1,5 +1,5 @@
 each book of books 
     script(src="/js/query.js")
     a(href="/books/"+book.isbn) #{book.title}
-    button#book.isbn(type='button' onclick='removeFromCart(this.id)') Remove
+    button(type='button' id=book.isbn onclick='removeFromCart(this.id)') Remove
     br

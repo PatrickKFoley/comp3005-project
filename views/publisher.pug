@@ -13,6 +13,9 @@ html
         br
         |Bank Account: #{publisher.bankAccountNum}
         br
+        |Phone Numbers:
+        each number in phoneNums
+            p #{number.phoneNum}
         |Publishes:
         ul
         each publish in publishes

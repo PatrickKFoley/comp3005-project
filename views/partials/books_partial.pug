@@ -4,5 +4,5 @@ if books != null
         if user.owner
             button#book.isbn(type='button' onclick='removeFromStore(this.id)') Remove
         else
-            button#book.isbn(type='button' onclick='addToCart(this.id)') Add To Cart
+            button(type='button' id=book.isbn onclick='addToCart(this.id)') Add To Cart
         br

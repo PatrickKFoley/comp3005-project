@@ -12,14 +12,15 @@ function removeFromCart(clicked_id){
 
     req.onreadystatechange = function() {
         if(this.readyState == 4 && this.status == 201){
-            alert(this.responseText);
+            location.href = document.getElementById("cart");
+            results.innerHTML = this.responseText;
         }
         else if(this.readyState == 4 && this.status == 404 || this.status == 400){
             alert(this.responseText);
         }
     }
 
-    req.open("PUT", "http://localhost:3000/carts/" + isbn);
+    req.open("PUT", "http://localhost:3000/carts/" + isbn + "?num=1");
     req.setRequestHeader("Content-Type", "application/json");
     let data = JSON.stringify(book);
     req.send(data);
@@ -47,7 +48,7 @@ function addToCart(clicked_id){
         }
     }
 
-    req.open("PUT", "http://localhost:3000/carts/" + isbn);
+    req.open("POST", "http://localhost:3000/carts");
     req.setRequestHeader("Content-Type", "application/json");
     let data = JSON.stringify(book);
     req.send(data);

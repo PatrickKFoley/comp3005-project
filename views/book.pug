@@ -22,5 +22,5 @@ html
         ul
             each genre in genres
                 | #{genre.genre},       
-        button#book.isbn(type='button' onclick='addToCart(this.id)') Add to Cart
-    script(href="/js/query.js")
+        button(type='button' id=book.isbn onclick='addToCart(this.id)') Add to Cart
+    script(src="/js/query.js")

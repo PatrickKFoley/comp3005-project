@@ -8,10 +8,9 @@ html
         |Cart
         br
         br
-        if cart
-            |Users that match search:
-        else
+        if books.length < 1
             |Nothing in cart
+        else
         #cart
             include ./partials/cart_partial.pug
         script(src="/js/query.js")
