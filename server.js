@@ -548,6 +548,21 @@ function getSales(req, res){
         sales.lastMonthIncome += (bookSalesMonth[k].price * bookSalesMonth[k].num);
         sales.lastMonthExpenses += ((bookSalesMonth[k].price * bookSalesMonth[k].num) * (bookSalesMonth[k].royalty/100));
       }
+
+      //Formatting all sales values to 2 decimal places
+      sales.income = sales.income.toFixed(2);
+      sales.expenses = sales.expenses.toFixed(2);
+      sales.lastMonthIncome = sales.lastMonthIncome.toFixed(2);
+      sales.lastMonthExpenses = sales.lastMonthExpenses.toFixed(2);
+      let fixedKey = Object.keys(sales.genres);
+      for(genre of fixedKey){
+        sales.genres[genre] = sales.genres[genre].toFixed(2);
+      }
+      fixedKey = Object.keys(sales.authors);
+      for(author of fixedKey){
+        sales.authors[author] = sales.authors[author].toFixed(2);
+      }
+      
       res.status(200);
       res.send(pug.renderFile("./views/sales.pug", {sales, user: req.session.user, loggedin: req.session.loggedin}));
     }
