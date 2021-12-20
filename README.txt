@@ -9,6 +9,7 @@ creating postgre database:
 		port: 5432
 		password: password
 	running the database initalizer will create all tables and populate them with some sample data
+	(as long as you have postgres installed you may have a database pre-built that will work with this project)
 
 running the server:
 	in a terminal, navigate to the proper directory and enter the command "npm install"
