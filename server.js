@@ -463,9 +463,96 @@ function getPublisher(req, res){
 //Get a page which displays store stats. Will need to do some
 // analysis for this perhaps.
 function getSales(req, res){
-  sales = {income : 0, expenses : 0, genres : {}, authors : {}};
-  res.status(200);
-  res.send(pug.renderFile("./views/sales.pug", {sales, user: req.session}));
+  (async() => {
+    try {
+      let sales = {income : 0, expenses : 0, genres : {}, authors : {}, lastMonthIncome: 0, lastMonthExpenses: 0};
+      let bookSalesTotal = {};
+      let bookSalesMonth = {};
+
+      //For bookSalesTotal
+      let bookSales = {};
+      let numSold;
+
+      numSold = (await database.query("SELECT isbn, SUM(quantity) AS total_sold from purchases GROUP BY isbn;", {type: Sequelize.SELECT}))[0];
+
+      for(let i = 0; i<numSold.length; i++){
+        bookResult = await book.findOne({where: {isbn:numSold[i].isbn}});
+        bookGen = await bookGenre.findAll({where: {isbn:numSold[i].isbn}});
+        let bGen = []
+        for(b of bookGen){
+          bGen.push(b.genre);
+        }
+        //console.log(bGen);
+        bookSales[numSold[i].isbn] = {};
+        bookSales[numSold[i].isbn].num = numSold[i].total_sold;
+        bookSales[numSold[i].isbn].author = bookResult.author;
+        bookSales[numSold[i].isbn].price = bookResult.price;
+        bookSales[numSold[i].isbn].royalty = bookResult.royalty;
+        bookSales[numSold[i].isbn].genres = bGen;
+      }
+      bookSalesTotal = JSON.parse(JSON.stringify(bookSales));
+      //END FOR BOOKSALES TOTAL
+
+      //For bookSalesMonth
+      bookSales = {};
+      numSold;
+
+      numSold = (await database.query("SELECT isbn, SUM(quantity) AS total_sold from purchases WHERE date>(CURRENT_DATE - INTERVAL '1 month') GROUP BY isbn;", {type: Sequelize.SELECT}))[0];
+ 
+      for(let i = 0; i<numSold.length; i++){
+        bookResult = await book.findOne({where: {isbn:numSold[i].isbn}});
+        bookGen = await bookGenre.findAll({where: {isbn:numSold[i].isbn}});
+        let bGenMonth = []
+        for(b of bookGen){
+          bGenMonth.push(b.genre);
+        }
+        bookSales[numSold[i].isbn] = {};
+        bookSales[numSold[i].isbn].num = numSold[i].total_sold;
+        bookSales[numSold[i].isbn].author = bookResult.author;
+        bookSales[numSold[i].isbn].price = bookResult.price;
+        bookSales[numSold[i].isbn].royalty = bookResult.royalty;
+        bookSales[numSold[i].isbn].genres = bGenMonth;
+      }
+      bookSalesMonth = JSON.parse(JSON.stringify(bookSales));
+      //END FOR BOOKSALESMONTH
+
+      let keys = Object.keys(bookSalesTotal);
+      let keysMonth = Object.keys(bookSalesMonth);
+
+      //Fill out values for all time sales
+      for(k of keys){
+        sales.income += (bookSalesTotal[k].price * bookSalesTotal[k].num);
+        sales.expenses += ((bookSalesTotal[k].price * bookSalesTotal[k].num) * (bookSalesTotal[k].royalty/100));
+        for(genre of bookSalesTotal[k].genres){
+          if(genre in sales.genres){
+            sales.genres[genre] += (bookSalesTotal[k].price * bookSalesTotal[k].num);
+          }
+          else{
+            sales.genres[genre] = (bookSalesTotal[k].price * bookSalesTotal[k].num);
+          }
+          console.log(sales.genres);
+        }
+        if(bookSalesTotal[k].author in sales.authors){
+          sales.authors[bookSalesTotal[k].author] += (bookSalesTotal[k].price * bookSalesTotal[k].num);
+        }
+        else{
+          sales.authors[bookSalesTotal[k].author] = (bookSalesTotal[k].price * bookSalesTotal[k].num);
+        }
+      }
+      //Fill out values for last month
+      for(k of keysMonth){
+        sales.lastMonthIncome += (bookSalesMonth[k].price * bookSalesMonth[k].num);
+        sales.lastMonthExpenses += ((bookSalesMonth[k].price * bookSalesMonth[k].num) * (bookSalesMonth[k].royalty/100));
+      }
+      res.status(200);
+      res.send(pug.renderFile("./views/sales.pug", {sales, user: req.session}));
+    }
+    catch(err){
+      console.log(err);
+      res.status(400);
+      res.send("Sorry but there's an issue");
+    }
+  })();
 };
 
 //get the add publisher page
@@ -626,6 +713,6 @@ function completeOrder(req, res){
       res.send("Sorry there was a problem on our end");
     }
   })();
-};
+}
 
-app.listen(port, () => console.log(`app listening on port ${port}`)) 
+app.listen(port, () => console.log(`app listening on port ${port}`));
