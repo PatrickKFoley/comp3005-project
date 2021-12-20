@@ -51,6 +51,9 @@ database.authenticate().then(() => {
 
             await user.create({ username : "owner", password : "password", owner : true, name : "Me", email : "owner@owner.com", address : "1290 POW"});
             await user.create({ username : "user", password : "password", owner : false,  name : "You", email : "user@user.com", address : "Home"});
+            await user.create({ username : "Zach", password : "password", owner : false, name : "Zach", email : "zach@gmail.com", address : "Love City"});
+            await user.create({ username : "Pat", password : "password", owner : false,  name : "Pat", email : "pat@pat.com.com", address : "1290 Prince Of Wales Dr. Ottawa On, K2C 1N3"});
+            await user.create({ username : "HaloMan", password : "password", owner : true, name : "John", email : "halo@owner.com", address : "Zeta Halo"});
 
             await book.create({ isbn : "101118794", title : "Enders Game", author : "Orson Scott Card", numPages : 458, stock : 10, price : "10.99", royalty: 50});
             await book.create({ isbn : "998784564", title : "Ice", author : "Anna Kavan", numPages : 185,  stock : 3, price : "15.99", royalty: 12});
@@ -98,10 +101,20 @@ database.authenticate().then(() => {
             await publisherPhoneNumber.create({ name : "Norstedts Forlag", phoneNum : "6138906677"});
 
             let today = new Date();
-            await purchases.create({ isbn : "101118794", username : "user", date : Date(), order_number : 1, quantity: 2});
-            await purchases.create({ isbn : "998784564", username : "user", date : Date(), order_number : 1, quantity: 1});
-            await purchases.create({ isbn : "9780553573428", username : "user", date : Date(), order_number : 1, quantity: 3});
-            await purchases.create({ isbn : "9789113014081", username : "user", date : Date(), order_number : 1, quantity: 1});
+            await purchases.create({ isbn : "101118794", username : "user", date : Date(), order_number : 3, quantity: 2});
+            await purchases.create({ isbn : "998784564", username : "user", date : Date(), order_number : 3, quantity: 1});
+
+            let twoMonthsAgo = new Date(today.setMonth(today.getMonth()-2));
+            await purchases.create({ isbn : "101118794", username : "user", date : twoMonthsAgo, order_number : 1, quantity: 8});
+            await purchases.create({ isbn : "998784564", username : "user", date : twoMonthsAgo, order_number : 1, quantity: 20});
+
+            await purchases.create({ isbn : "9780553573428", username : "Zach", date : twoMonthsAgo, order_number : 2, quantity: 100});
+            await purchases.create({ isbn : "9789113014081", username : "Zach", date : twoMonthsAgo, order_number : 2, quantity: 36});
+
+            await purchases.create({ isbn : "9780553573428", username : "Pat", date : Date(), order_number : 4, quantity: 1});
+            await purchases.create({ isbn : "998784564", username : "Pat", date : Date(), order_number : 4, quantity: 4});
+            await purchases.create({ isbn : "0553579908", username : "Pat", date : Date(), order_number : 4, quantity: 3});
+            await purchases.create({ isbn : "9789113014081", username : "Pat", date : Date(), order_number : 4, quantity: 1});
         }
         catch(err){
             console.log(err);
