@@ -5,15 +5,28 @@ html
     body
         include ./partials/header.pug
         br
-        |Income: #{sales.income}
+        |Income: $#{sales.income}
         br
-        |Expenditure: #{sales.expenses}
+        |Expenditure: $#{sales.expenses}
+        br
         br
         |Sales Per Genre:
-        for genre of sales.genres
-            |#{genre.name}: $#{genre.sales}
+        br
+        - let keys = Object.keys(sales.genres);
+        for k of keys
+            |#{k}: $#{sales.genres[k]}
             br
         br
-        for author of sales.author 
-            |#{author.name}: $#{author.sales}
-        |Delivered: #{order.delivered}
+        |Sales By Author:
+        br
+        - let authors = Object.keys(sales.authors);
+            for k of authors
+                |#{k}: $#{sales.authors[k]}
+                br
+        br
+        br
+        |Sales Vs. Expenditures over the past month
+        br
+        |Income: $#{sales.lastMonthIncome}
+        br
+        |Expenses $#{sales.lastMonthExpenses}
