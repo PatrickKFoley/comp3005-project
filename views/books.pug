@@ -7,6 +7,13 @@ html
         br
         |Search
         br
+        label(for="dropdown") Search by: 
+        select(name="dropdown" id="dropdown")
+            option(value="title") Title 
+            option(value="author") Author
+            option(value="isbn") ISBN 
+            option(value="price>") Price greater than
+            option(value="price<") Price less than
         input(type="text" id="book" size="50")
         button(type='button' onclick='searchBooks()') Search
         br
