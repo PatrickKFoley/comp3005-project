@@ -264,7 +264,12 @@ function addBook(req, res){
       try {
           //ensure that each publisher exists
           var publishers = req.body.publisher;
-          publishers = publishers.split(" ").join("").split(",")
+          publishers = publishers.split(",");
+
+          for (var i = 0; i < publishers.length; i++){
+            publishers[i] = publishers[i].trim();
+          }
+
           console.log(publishers)
           for (var i = 0; i < publishers.length; i++){
               const publisher = await database.query("SELECT * FROM publishers WHERE name = '" + publishers[i] + "'", {type: Sequelize.SELECT});
@@ -394,7 +399,8 @@ function getOrder(req, res){
         order_no : ord[0].order_number,
         date: ord[0].date,
         delivery_date: newDate,
-        delivered: Date() > newDate
+        delivered: Date() > newDate,
+        username: ord[0].username
       };
 
       res.status(200);
