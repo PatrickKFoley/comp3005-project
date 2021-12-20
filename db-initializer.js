@@ -97,7 +97,6 @@ database.authenticate().then(() => {
             await publisherPhoneNumber.create({ name : "Bantem Dell", phoneNum : "6133678999"});
             await publisherPhoneNumber.create({ name : "Norstedts Forlag", phoneNum : "6138906677"});
 
-
             let today = new Date();
             await purchases.create({ isbn : "101118794", username : "user", date : Date(), order_number : 1, quantity: 2});
             await purchases.create({ isbn : "998784564", username : "user", date : Date(), order_number : 1, quantity: 1});
