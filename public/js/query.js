@@ -163,7 +163,8 @@ function addPublisher(){
 
 //Sends request to server to return books that match query
 function searchBooks(){
-    let title = document.getElementById("book").value;
+    let search = document.getElementById("book").value;
+    let option = document.getElementById("dropdown").value;
 
     let req = new XMLHttpRequest();
 	
@@ -174,7 +175,7 @@ function searchBooks(){
         }
     }
 
-    req.open("GET", "http://localhost:3000/books?title=" + title + "&num=1");
+    req.open("GET", "http://localhost:3000/books?search=" + search + "&option=" + option + "&num=1");
     req.setRequestHeader("Content-Type", "application/json");
     req.send();
 }

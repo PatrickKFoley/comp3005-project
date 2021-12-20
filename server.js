@@ -191,14 +191,28 @@ function login(req, res){
 function getBooks(req, res){
   (async () => {
     try {
+      console.log(req.query)
       let query = ""
-      let title = req.query.title;
-      if (title == undefined) {
+      let search = req.query.search;
+      if (search == undefined) {
         //send everything
         query = 'SELECT title, isbn FROM books';
       } else {
         //find what they actually want and send it
-        query = "SELECT title, isbn FROM books WHERE title LIKE '%" + title + "%'";
+        query = "SELECT title, isbn FROM books WHERE title LIKE '%" + search + "%'";
+      }
+      if (req.query.option == undefined){
+        
+      } else if (req.query.option == "title"){
+        query = "SELECT title, isbn FROM books WHERE title LIKE '%" + search + "%'";
+      } else if (req.query.option == "author"){
+        query = "SELECT title, isbn FROM books WHERE author LIKE '%" + search + "%'";
+      } else if (req.query.option == "isbn"){
+        query = "SELECT title, isbn FROM books WHERE isbn =" + search;
+      } else if (req.query.option == "price>"){
+        query = "SELECT title, isbn FROM books WHERE price > " + search;
+      } else if (req.query.option == "price<"){
+        query = "SELECT title, isbn FROM books WHERE price < " + search;
       }
 
       const books = await database.query(query, {type: Sequelize.SELECT})
