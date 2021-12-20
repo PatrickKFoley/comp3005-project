@@ -45,11 +45,14 @@ database.authenticate().then(() => {
             await publishes.sync({ force: true });
             await purchases.sync({ force: true });
 
+            //"CURRENT_DATE;" "CURRENT_DATE - INTERVAL'1 month'"
+            await database.query("CREATE OR REPLACE FUNCTION restock_books() RETURNS trigger as $stamp$ BEGIN UPDATE books SET stock=subquery.total FROM (SELECT SUM(quantity) AS total FROM purchases WHERE date>(CURRENT_DATE - INTERVAL '1 month') and isbn=NEW.isbn) AS subquery WHERE isbn=NEW.isbn AND stock=0; RETURN NEW; END; $stamp$ LANGUAGE plpgsql ");
+            await database.query("CREATE TRIGGER restock AFTER INSERT ON purchases FOR EACH ROW EXECUTE PROCEDURE restock_books();");
 
             await user.create({ username : "owner", password : "password", owner : true, name : "Me", email : "owner@owner.com", address : "1290 POW"});
             await user.create({ username : "user", password : "password", owner : false,  name : "You", email : "user@user.com", address : "Home"});
 
-            await book.create({ isbn : "101118794", title : "Ender Game", author : "Orson Scott Card", numPages : 458, stock : 10, price : "10.99", royalty: 50});
+            await book.create({ isbn : "101118794", title : "Enders Game", author : "Orson Scott Card", numPages : 458, stock : 10, price : "10.99", royalty: 50});
             await book.create({ isbn : "998784564", title : "Ice", author : "Anna Kavan", numPages : 185,  stock : 3, price : "15.99", royalty: 12});
 
             await bookGenre.create({ isbn : "101118794", genre : "Sci-Fi"});
@@ -64,6 +67,7 @@ database.authenticate().then(() => {
             await publisherPhoneNumber.create({ name : "Penguin", phoneNum : "5194004204"});
             await publisherPhoneNumber.create({ name : "Imperial", phoneNum : "7894561231"});
 
+            let today = new Date();
             await purchases.create({ isbn : "101118794", username : "user", date : Date(), order_number : 1, quantity: 2});
             await purchases.create({ isbn : "998784564", username : "user", date : Date(), order_number : 1, quantity: 1});
         }

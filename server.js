@@ -602,7 +602,7 @@ function completeOrder(req, res){
       //CREATE DATE
       //REMOVE BOOKS FROM CART
       //CREATE NEW ENTRY FOR EACH BOOK IN PURCHASES
-      const uniquePurchases = (await database.query("SELECT count(*) FROM (SELECT distinct(order_number) FROM purchases) AS temp;", {type: Sequelize.SELECT}))[0][0].count;
+      const uniquePurchases = (await database.query("SELECT MAX(order_number) AS last_num FROM (SELECT distinct(order_number) FROM purchases) AS temp;", {type: Sequelize.SELECT}))[0][0].last_num;
       let newOrderNum = parseInt(uniquePurchases) + 1;
       let purchaseDate = new Date();
       let username = req.session.user.username;
@@ -615,14 +615,6 @@ function completeOrder(req, res){
         console.log("isbn: " + isbn);
         await purchases.create({isbn, username, date: purchaseDate, order_number: newOrderNum, quantity});
         await cart.destroy({where: {username, isbn}});
-        //Get restock from publisher if none left
-        let result = await book.findOne({where : {isbn}});
-        if(result.stock<=0){
-          await book.update(
-            { stock: 20},
-            { where: {isbn} }
-          );
-        }
       }
       res.status(200);
       res.send("/orders/" + newOrderNum);
