@@ -394,7 +394,7 @@ function getOrder(req, res){
         order_no : ord[0].order_number,
         date: ord[0].date,
         delivery_date: newDate,
-        delivered: Date() > newDate
+        delivered: (new Date().getTime() > newDate.getTime())
       };
 
       res.status(200);
@@ -482,7 +482,6 @@ function getSales(req, res){
         for(b of bookGen){
           bGen.push(b.genre);
         }
-        //console.log(bGen);
         bookSales[numSold[i].isbn] = {};
         bookSales[numSold[i].isbn].num = numSold[i].total_sold;
         bookSales[numSold[i].isbn].author = bookResult.author;
@@ -530,7 +529,6 @@ function getSales(req, res){
           else{
             sales.genres[genre] = (bookSalesTotal[k].price * bookSalesTotal[k].num);
           }
-          console.log(sales.genres);
         }
         if(bookSalesTotal[k].author in sales.authors){
           sales.authors[bookSalesTotal[k].author] += (bookSalesTotal[k].price * bookSalesTotal[k].num);
@@ -545,7 +543,7 @@ function getSales(req, res){
         sales.lastMonthExpenses += ((bookSalesMonth[k].price * bookSalesMonth[k].num) * (bookSalesMonth[k].royalty/100));
       }
       res.status(200);
-      res.send(pug.renderFile("./views/sales.pug", {sales, user: req.session}));
+      res.send(pug.renderFile("./views/sales.pug", {sales, user: req.session.user, loggedin: req.session.loggedin}));
     }
     catch(err){
       console.log(err);
