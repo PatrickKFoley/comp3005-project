@@ -62,6 +62,7 @@ database.authenticate().then(() => {
             await book.create({ isbn : "9780553582024", title : "A Feast For Crows", author : "George R.R. Martin", numPages : 976,  stock : 8, price : "10.99", royalty: 25});
             await book.create({ isbn : "9781101886038", title : "A Dance With Dragons", author : "George R.R. Martin", numPages : 1051,  stock : 15, price : "11.99", royalty: 25});
             await book.create({ isbn : "9789113014081", title : "The Girl with the Dragon Tattoo", author : "Stieg Larsson", numPages : 651,  stock : 16, price : "19.99", royalty: 22});
+            await book.create({ isbn : "666", title : "My Life In A Literal Bottle", author : "Zachary Neath", numPages : 10000,  stock : 800, price : "99.99", royalty: 90});
 
             await bookGenre.create({ isbn : "101118794", genre : "Sci-Fi"});
             await bookGenre.create({ isbn : "998784564", genre : "Mystery"});
@@ -79,11 +80,15 @@ database.authenticate().then(() => {
             await bookGenre.create({ isbn : "9781101886038", genre : "Adult"});
             await bookGenre.create({ isbn : "9789113014081", genre : "Thriller"});
             await bookGenre.create({ isbn : "9789113014081", genre : "Adult"});
+            await bookGenre.create({ isbn : "666", genre : "Biography"});
+            await bookGenre.create({ isbn : "666", genre : "Adult"});
+            await bookGenre.create({ isbn : "666", genre : "Horror"});
 
             await publisher.create({ name : "Penguin", address : "P30 Wallaby Way, Sydney", email : "penguin@pub.com", bankAccountNum : "987654321"});
             await publisher.create({ name : "Imperial", address : "18 Braden Way, Vaughan, Ontario", email : "imperial@pub.com", bankAccountNum : "123456789"});
             await publisher.create({ name : "Bantem Dell", address : "1745 Broadway, New York City, New York", email : "bantemdell@pub.com", bankAccountNum : "678954321"});
             await publisher.create({ name : "Norstedts Forlag", address : "Tryckerigatan 4, 111 28 Stockholm", email : "norstedtsforlag@pub.com", bankAccountNum : "123459876"});
+            await publisher.create({ name : "Zachary Neath", address : "1290 Prince of Wales Dr.", email : "zneath1@gmail.com", bankAccountNum : "80085"});
 
             await publishes.create({ name : "Penguin", isbn : "101118794"});
             await publishes.create({ name : "Imperial", isbn : "998784564"});
@@ -92,6 +97,7 @@ database.authenticate().then(() => {
             await publishes.create({ name : "Bantem Dell", isbn : "9780553582024"});
             await publishes.create({ name : "Bantem Dell", isbn : "9781101886038"});
             await publishes.create({ name : "Norstedts Forlag", isbn : "9789113014081"});
+            await publishes.create({ name : "Zachary Neath", isbn : "666"});
 
             await publisherPhoneNumber.create({ name : "Penguin", phoneNum : "5194004204"});
             await publisherPhoneNumber.create({ name : "Imperial", phoneNum : "7894561231"});
@@ -99,6 +105,7 @@ database.authenticate().then(() => {
             await publisherPhoneNumber.create({ name : "Bantem Dell", phoneNum : "6133678990"});
             await publisherPhoneNumber.create({ name : "Bantem Dell", phoneNum : "6133678999"});
             await publisherPhoneNumber.create({ name : "Norstedts Forlag", phoneNum : "6138906677"});
+            await publisherPhoneNumber.create({ name : "Zachary Neath", phoneNum : "5194004204"});
 
             let today = new Date();
             await purchases.create({ isbn : "101118794", username : "user", date : Date(), order_number : 3, quantity: 2});
