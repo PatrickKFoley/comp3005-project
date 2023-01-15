@@ -5,7 +5,7 @@ const session = require("express-session");
 const bodyParser = require('body-parser');
 const { UniqueConstraintError } = require('sequelize');
 const Sequelize = require('sequelize');
-const database = new Sequelize('postgres://postgres:password@localhost:5432/postgres');
+const database = new Sequelize('postgres://postgres:Clones12!@localhost:5432/postgres');
 
 //Define models
 const bookModel = require('./models/sequelize/bookModel.js');
